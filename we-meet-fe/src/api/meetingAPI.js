@@ -1,77 +1,110 @@
 // src/api/meetingApi.js
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from "../lib/supabaseClient";
 
 // 고유 ID 생성 함수
 const generateUniqueId = () => {
-  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const idLength = 10;
-  let result = '';
-  
+  let result = "";
+
   for (let i = 0; i < idLength; i++) {
     const randomIndex = Math.floor(Math.random() * charset.length);
     result += charset[randomIndex];
   }
-  
+
   return result;
 };
 
 // 미팅 생성 API
+// Meeting 생성 함수
 export const createMeeting = async (meetingData) => {
   try {
-    const uniqueId = generateUniqueId();
-    const meetingUrl = `${window.location.origin}/meeting/${uniqueId}`;
+    const formattedDates = meetingData.dates.map(date => 
+      new Date(date).toISOString().split('T')[0]
+    )
 
     const { data, error } = await supabase
       .from('meetings')
       .insert([
         {
-          id: uniqueId,
+          creator_id: null,  // 로그인하지 않은 사용자는 null
+          creator_name: meetingData.creator_name,  // 직접 입력한 이름
           title: meetingData.title,
           description: meetingData.description,
-          dates: meetingData.dates,
-          time_range: meetingData.timeRange,
-          url: meetingUrl,
-          created_at: new Date().toISOString()
+          dates: formattedDates,            
+          time_range_start: meetingData.time_range_start + ':00',
+          time_range_end: meetingData.time_range_end + ':00',
+          is_online: meetingData.isOnline,
         }
       ])
-      .select();
+      .select()
 
-    if (error) throw error;
-
-    return {
-      success: true,
-      data: data[0],
-      url: meetingUrl
-    };
+    if (error) throw error
+    return { success: true, data }
   } catch (error) {
-    console.error('Error creating meeting:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error('Error creating meeting:', error)
+    return { success: false, error: error.message }
   }
-};
+}
+// export const createMeeting = async (meetingData) => {
+//   try {
+//     const uniqueId = generateUniqueId();
+//     const meetingUrl = `${window.location.origin}/meeting/${uniqueId}`;
+
+//     // JSONB 형식으로 변환
+//     const formattedDates = JSON.stringify(meetingData.selectedDates);
+//     const formattedTimeRange = JSON.stringify(meetingData.timeRange);
+//     console.log(formattedDates);
+//     console.log(formattedTimeRange);
+
+//     const { data, error } = await supabase.from("meetings").insert([
+//       {
+//         id: uniqueId,
+//         title: meetingData.title,
+//         description: meetingData.description,
+//         dates: formattedDates,       
+//         time_range: formattedTimeRange, 
+//         url: meetingUrl,
+//       },
+//     ]);
+
+//     if (error) throw error;
+
+//     return {
+//       success: true,
+//       data: data[0],
+//       url: meetingUrl,
+//     };
+//   } catch (error) {
+//     console.error("Error creating meeting:", error);
+//     return {
+//       success: false,
+//       error: error.message,
+//     };
+//   }
+// };
 
 // 미팅 조회 API
 export const getMeeting = async (meetingId) => {
   try {
     const { data, error } = await supabase
-      .from('meetings')
-      .select('*')
-      .eq('id', meetingId)
+      .from("meetings")
+      .select("*")
+      .eq("id", meetingId)
       .single();
 
     if (error) throw error;
 
     return {
       success: true,
-      data
+      data,
     };
   } catch (error) {
-    console.error('Error fetching meeting:', error);
+    console.error("Error fetching meeting:", error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };
@@ -80,21 +113,21 @@ export const getMeeting = async (meetingId) => {
 export const getMeetings = async () => {
   try {
     const { data, error } = await supabase
-      .from('meetings')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("meetings")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
 
     return {
       success: true,
-      data
+      data,
     };
   } catch (error) {
-    console.error('Error fetching meetings:', error);
+    console.error("Error fetching meetings:", error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };
@@ -103,28 +136,28 @@ export const getMeetings = async () => {
 export const updateMeeting = async (meetingId, updateData) => {
   try {
     const { data, error } = await supabase
-      .from('meetings')
+      .from("meetings")
       .update({
         title: updateData.title,
         description: updateData.description,
         dates: updateData.dates,
         time_range: updateData.timeRange,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', meetingId)
+      .eq("id", meetingId)
       .select();
 
     if (error) throw error;
 
     return {
       success: true,
-      data: data[0]
+      data: data[0],
     };
   } catch (error) {
-    console.error('Error updating meeting:', error);
+    console.error("Error updating meeting:", error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };
@@ -133,20 +166,20 @@ export const updateMeeting = async (meetingId, updateData) => {
 export const deleteMeeting = async (meetingId) => {
   try {
     const { error } = await supabase
-      .from('meetings')
+      .from("meetings")
       .delete()
-      .eq('id', meetingId);
+      .eq("id", meetingId);
 
     if (error) throw error;
 
     return {
-      success: true
+      success: true,
     };
   } catch (error) {
-    console.error('Error deleting meeting:', error);
+    console.error("Error deleting meeting:", error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };

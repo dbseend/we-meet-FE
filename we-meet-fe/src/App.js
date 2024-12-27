@@ -4,6 +4,7 @@ import Dashboard from "./components/auth/Dashboard";
 import GoogleLogin from "./components/auth/GoogleLogin";
 import { useAuth } from "./context/AuthContext";
 import CreateMeetingPage from "./components/meeting/CreateMeetingPage";
+import MeetingScheduler from "./components/meeting/MeetingScheduler"; // 추가
 
 // 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ children }) => {
@@ -35,6 +36,11 @@ function AppRoutes() {
             <CreateMeetingPage/>
           </ProtectedRoute>
         }
+      />
+      {/* 미팅 스케줄러 라우트 추가 */}
+      <Route
+        path="/meeting/:id"
+        element={<MeetingScheduler />}
       />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
