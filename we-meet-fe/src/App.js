@@ -21,27 +21,9 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<GoogleLogin />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/create"
-        element={
-          <ProtectedRoute>
-            <CreateMeetingPage/>
-          </ProtectedRoute>
-        }
-      />
-      {/* 미팅 스케줄러 라우트 추가 */}
-      <Route
-        path="/meeting/:id"
-        element={<MeetingScheduler />}
-      />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/create" element={<CreateMeetingPage />} />
+      <Route path="/meeting/:id" element={<MeetingScheduler />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

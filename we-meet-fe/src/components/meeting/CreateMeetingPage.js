@@ -9,7 +9,6 @@ const CreateMeetingPage = () => {
     time_range_start: "09:00",
     time_range_end: "18:00",
     is_online: false,
-    creator_name: "",
   });
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isDragging, setIsDragging] = useState(false);
@@ -137,26 +136,6 @@ const CreateMeetingPage = () => {
         <h1 className="text-2xl font-bold text-center text-gray-800">
           새로운 미팅 만들기
         </h1>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            이름
-          </label>
-          <input
-            type="text"
-            name="creator_name"
-            value={meetingData.creator_name}
-            onChange={(e) =>
-              setMeetingData((prev) => ({
-                ...prev,
-                creator_name: e.target.value,
-              }))
-            }
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
-            placeholder="이름을 입력하세요"
-            required
-          />
-        </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">

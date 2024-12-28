@@ -20,6 +20,11 @@ const generateUniqueId = () => {
 // Meeting 생성 함수
 export const createMeeting = async (meetingData) => {
   try {
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    // if (userError) throw userError
+    console.log("user: ", user);
+
     const formattedDates = meetingData.dates.map(date => 
       new Date(date).toISOString().split('T')[0]
     )
@@ -29,7 +34,6 @@ export const createMeeting = async (meetingData) => {
       .insert([
         {
           creator_id: null,  // 로그인하지 않은 사용자는 null
-          creator_name: meetingData.creator_name,  // 직접 입력한 이름
           title: meetingData.title,
           description: meetingData.description,
           dates: formattedDates,            
@@ -47,43 +51,6 @@ export const createMeeting = async (meetingData) => {
     return { success: false, error: error.message }
   }
 }
-// export const createMeeting = async (meetingData) => {
-//   try {
-//     const uniqueId = generateUniqueId();
-//     const meetingUrl = `${window.location.origin}/meeting/${uniqueId}`;
-
-//     // JSONB 형식으로 변환
-//     const formattedDates = JSON.stringify(meetingData.selectedDates);
-//     const formattedTimeRange = JSON.stringify(meetingData.timeRange);
-//     console.log(formattedDates);
-//     console.log(formattedTimeRange);
-
-//     const { data, error } = await supabase.from("meetings").insert([
-//       {
-//         id: uniqueId,
-//         title: meetingData.title,
-//         description: meetingData.description,
-//         dates: formattedDates,       
-//         time_range: formattedTimeRange, 
-//         url: meetingUrl,
-//       },
-//     ]);
-
-//     if (error) throw error;
-
-//     return {
-//       success: true,
-//       data: data[0],
-//       url: meetingUrl,
-//     };
-//   } catch (error) {
-//     console.error("Error creating meeting:", error);
-//     return {
-//       success: false,
-//       error: error.message,
-//     };
-//   }
-// };
 
 // 미팅 조회 API
 export const getMeeting = async (meetingId) => {
@@ -91,7 +58,7 @@ export const getMeeting = async (meetingId) => {
     const { data, error } = await supabase
       .from("meetings")
       .select("*")
-      .eq("id", meetingId)
+      .eq("meeting_id", meetingId)
       .single();
 
     if (error) throw error;
