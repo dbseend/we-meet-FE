@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createMeeting } from "../../api/meetingAPI";
+import { createMeeting } from "../../api/meeting/MeetingAPI";
 
 const CreateMeetingPage = () => {
   const [meetingData, setMeetingData] = useState({
@@ -110,6 +110,7 @@ const CreateMeetingPage = () => {
     try {
       setIsLoading(true); // 로딩 상태 추가 필요
       const result = await createMeeting(meetingData);
+      console.log("result: ", result);
 
       if (result.success) {
         // 성공 시 URL 복사 또는 다음 페이지로 이동

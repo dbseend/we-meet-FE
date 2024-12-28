@@ -4,7 +4,7 @@ import {
   getMeeting,
   submitTimeSelections,
   checkLoginStatus,
-} from "../../api/meetingAPI";
+} from "../../api/meeting/MeetingAPI";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/Dialog";
@@ -269,7 +269,7 @@ const MeetingScheduler = () => {
   const [selectedTimes, setSelectedTimes] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSelectionEnabled, setIsSelectionEnabled] = useState(true);
+  const [isSelectionEnabled, setIsSelectionEnabled] = useState(false);
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");

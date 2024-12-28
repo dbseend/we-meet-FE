@@ -29,10 +29,7 @@ const GoogleLogin = () => {
           scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
         },
       });
-
-      console.log("user data: ", data);
-      alert("멈춰");
-
+      
       if (error) throw error;
     } catch (error) {
       setError(error.message);
