@@ -280,6 +280,28 @@ const CreateMeetingPage = () => {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+              <input
+                type="checkbox"
+                checked={meetingData.is_online}
+                onChange={(e) =>
+                  setMeetingData((prev) => ({
+                    ...prev,
+                    is_online: e.target.checked,
+                  }))
+                }
+                className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+              />
+              <span>온라인 미팅</span>
+            </label>
+            {meetingData.is_online && (
+              <div className="ml-6 text-sm text-gray-500">
+                • 온라인 미팅 링크는 미팅 생성 후 참가자들에게 공유됩니다
+              </div>
+            )}
+          </div>
+
           {meetingData.dates.length > 0 && (
             <div className="text-right text-sm text-gray-600">
               선택된 날짜: {meetingData.dates.length}일
