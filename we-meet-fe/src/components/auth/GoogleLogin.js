@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../../lib/supabaseClient";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
+import { supabase } from "../../lib/supabaseClient";
 
 const GoogleLogin = () => {
   const [loading, setLoading] = useState(false);
@@ -31,16 +30,10 @@ const GoogleLogin = () => {
         },
       });
 
+      console.log("user data: ", data);
+      alert("멈춰");
+
       if (error) throw error;
-
-      // 로그인 성공 후 액세스 토큰을 백엔드로 전송
-      const session = await supabase.auth.getSession();
-      const accessToken = session?.data?.session?.provider_token;
-
-      // 백엔드로 토큰 전송
-      await axios.post("http://your-backend-url/api/auth/google", {
-        accessToken: accessToken,
-      });
     } catch (error) {
       setError(error.message);
     } finally {

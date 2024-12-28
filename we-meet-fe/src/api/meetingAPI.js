@@ -2,7 +2,6 @@
 import { supabase } from "../lib/supabaseClient";
 
 // 미팅 생성 API
-// Meeting 생성 함수
 export const createMeeting = async (meetingData) => {
   try {
     // 1. 현재 인증된 사용자 정보 가져오기
