@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Share2, Link } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";
 import {
   getMeeting,
@@ -7,25 +7,47 @@ import {
 } from "../../api/meeting/MeetingAPI";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../ui/Dialog";
 import { useToast } from "../ui/Toast";
 
-const TimeSlot = ({ time, isSelected, isHovered }) => {
+// 시간 셀 컴포넌트
+const TimeCell = ({
+  time,
+  isSelected,
+  isHovered,
+  onClick,
+  onMouseDown,
+  onMouseEnter,
+  onMouseUp,
+}) => {
   return (
     <div
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onMouseUp={onMouseUp} // mouseUp 이벤트 추가
       className={`
-        h-8 border border-gray-200 cursor-pointer flex items-center px-2 select-none
+        border border-gray-200 h-8 cursor-pointer select-none
         ${isSelected ? "bg-blue-500 text-white" : "bg-white"}
         ${isHovered && !isSelected ? "bg-blue-100" : ""}
         ${isHovered && isSelected ? "bg-blue-400" : ""}
         transition-colors duration-150
       `}
     >
-      {time}
+      <div className="h-full flex items-center justify-center text-sm">
+        {time}
+      </div>
     </div>
   );
 };
 
+// 시간표 컴포넌트
 const TimeTable = ({
   date,
   timeRangeStart,
@@ -35,48 +57,19 @@ const TimeTable = ({
   isSelectionEnabled,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [lastHoveredIndex, setLastHoveredIndex] = useState(null);
-  const [hoveredSlots, setHoveredSlots] = useState([]);
-  const dragStartTimeRef = useRef(null);
-  const dragStartIndexRef = useRef(null);
-  const tableRef = useRef(null);
+  const [hoveredTimes, setHoveredTimes] = useState([]);
+  const dragStartRef = useRef(null);
+  const mouseDownRef = useRef(false);
 
+  // 시간 슬롯 생성
   const generateTimeSlots = () => {
     const slots = [];
+    const [startHour] = timeRangeStart.split(":").map(Number);
+    const [endHour] = timeRangeEnd.split(":").map(Number);
 
-    const parseTime = (timeStr) => {
-      const [hours, minutes] = timeStr.split(":").map(Number);
-      return { hours, minutes };
-    };
-
-    const addMinutes = (hours, minutes, addedMinutes) => {
-      let newMinutes = minutes + addedMinutes;
-      let newHours = hours + Math.floor(newMinutes / 60);
-      newMinutes = newMinutes % 60;
-      return {
-        hours: newHours,
-        minutes: newMinutes,
-      };
-    };
-
-    const formatTime = (hours, minutes) => {
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-        2,
-        "0"
-      )}`;
-    };
-
-    const start = parseTime(timeRangeStart);
-    const end = parseTime(timeRangeEnd);
-
-    let current = { ...start };
-
-    while (
-      current.hours < end.hours ||
-      (current.hours === end.hours && current.minutes <= end.minutes)
-    ) {
-      slots.push(formatTime(current.hours, current.minutes));
-      current = addMinutes(current.hours, current.minutes, 30);
+    for (let hour = startHour; hour <= endHour; hour++) {
+      slots.push(`${hour.toString().padStart(2, "0")}:00`);
+      slots.push(`${hour.toString().padStart(2, "0")}:30`);
     }
 
     return slots;
@@ -84,127 +77,87 @@ const TimeTable = ({
 
   const timeSlots = generateTimeSlots();
 
-  const updateSelection = (startIdx, currentIdx, forceSelect = null) => {
+  const handleMouseDown = (time) => {
     if (!isSelectionEnabled) return;
-
-    let start, end;
-    let shouldSelect;
-
-    if (lastHoveredIndex !== null) {
-      // 드래그 방향이 바뀌었는지 확인
-      const lastDirection = lastHoveredIndex > dragStartIndexRef.current;
-      const currentDirection = currentIdx > lastHoveredIndex;
-
-      if (lastDirection !== currentDirection) {
-        // 방향이 바뀌면 마지막 위치를 새로운 시작점으로 설정
-        dragStartIndexRef.current = lastHoveredIndex;
-      }
-    }
-
-    start = Math.min(dragStartIndexRef.current, currentIdx);
-    end = Math.max(dragStartIndexRef.current, currentIdx);
-
-    const range = timeSlots.slice(start, end + 1);
-    setHoveredSlots(range);
-
-    // 드래그 방향에 따라 선택/해제 결정
-    if (forceSelect !== null) {
-      shouldSelect = forceSelect;
-    } else {
-      shouldSelect = currentIdx > dragStartIndexRef.current;
-    }
-
-    // 선택 상태 업데이트
-    range.forEach((time) => {
-      const isTimeSelected = selectedTimes.includes(time);
-      if (shouldSelect && !isTimeSelected) {
-        onTimeSelect(time);
-      } else if (!shouldSelect && isTimeSelected) {
-        onTimeSelect(time);
-      }
-    });
+    mouseDownRef.current = true; // 마우스 다운 상태 기록
+    setIsDragging(false); // 초기에는 드래그 상태가 아님
+    dragStartRef.current = time;
   };
 
-  const handleMouseDown = (time, index, e) => {
-    if (!isSelectionEnabled) return;
-    e.preventDefault();
-    setIsDragging(true);
-    dragStartTimeRef.current = time;
-    dragStartIndexRef.current = index;
-    setLastHoveredIndex(index);
-
-    const isSelected = selectedTimes.includes(time);
-    updateSelection(index, index, !isSelected);
+  const handleMouseEnter = (time) => {
+    if (!isSelectionEnabled || !mouseDownRef.current) return;
+    setIsDragging(true); // 마우스 이동이 있으면 드래그 상태로 변경
+    setHoveredTimes([time]);
+    onTimeSelect(time);
   };
 
-  const handleMouseEnter = (time, index) => {
+  const handleMouseUp = (time) => {
     if (!isSelectionEnabled) return;
-    if (isDragging && dragStartIndexRef.current !== null) {
-      updateSelection(dragStartIndexRef.current, index);
-      setLastHoveredIndex(index);
-    }
-  };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    dragStartTimeRef.current = null;
-    dragStartIndexRef.current = null;
-    setLastHoveredIndex(null);
-    setHoveredSlots([]);
-  };
-
-  const handleClick = (time) => {
-    if (!isSelectionEnabled) return;
+    // 드래그가 아닌 경우에만 클릭 동작 수행
     if (!isDragging) {
       onTimeSelect(time);
     }
+
+    // 상태 초기화
+    setIsDragging(false);
+    dragStartRef.current = null;
+    setHoveredTimes([]);
+    mouseDownRef.current = false;
   };
 
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      handleMouseUp();
+      setIsDragging(false);
+      dragStartRef.current = null;
+      setHoveredTimes([]);
+      mouseDownRef.current = false;
     };
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => {
-      window.removeEventListener("mouseup", handleGlobalMouseUp);
-    };
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, []);
 
   return (
-    <div
-      ref={tableRef}
-      className="w-full max-w-xl mx-auto p-4"
-      onMouseLeave={() => {
-        if (isDragging) {
-          setHoveredSlots([]);
-        }
-      }}
-    >
+    <div className="w-full max-w-xl mx-auto p-4">
       <div className="font-bold mb-4">{date}</div>
-      <div className="grid grid-cols-1 gap-1">
-        {timeSlots.map((time, index) => (
-          <div
-            key={time}
-            onMouseDown={(e) => handleMouseDown(time, index, e)}
-            onMouseEnter={() => handleMouseEnter(time, index)}
-            onClick={() => handleClick(time)}
-            className={
-              !isSelectionEnabled ? "pointer-events-none opacity-50" : ""
-            }
-          >
-            <TimeSlot
-              time={time}
-              isSelected={selectedTimes.includes(time)}
-              isHovered={hoveredSlots.includes(time)}
-            />
+      <div className="flex">
+        {/* 시간 레이블 */}
+        <div className="w-16 flex flex-col">
+          {timeSlots.map(
+            (time, index) =>
+              index % 2 === 0 && (
+                <div
+                  key={`label-${time}`}
+                  className="h-16 flex items-center justify-end pr-2 text-sm text-gray-500"
+                >
+                  {time}
+                </div>
+              )
+          )}
+        </div>
+        {/* 시간 선택 그리드 */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 gap-0">
+            {timeSlots.map((time) => (
+              <TimeCell
+                key={time}
+                time={time}
+                isSelected={selectedTimes.includes(time)}
+                isHovered={hoveredTimes.includes(time)}
+                onMouseDown={() => handleMouseDown(time)}
+                onMouseEnter={() => handleMouseEnter(time)}
+                onMouseUp={() => handleMouseUp(time)}
+              />
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 };
 
+// 제출 다이얼로그 컴포넌트
 const SubmitDialog = ({ isOpen, onClose, onSubmit, isLoggedIn, userName }) => {
   const [name, setName] = useState(userName || "");
   const [submitting, setSubmitting] = useState(false);
@@ -263,6 +216,7 @@ const SubmitDialog = ({ isOpen, onClose, onSubmit, isLoggedIn, userName }) => {
   );
 };
 
+// 메인 미팅 스케줄러 컴포넌트
 const MeetingScheduler = () => {
   const [meetingData, setMeetingData] = useState(null);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
@@ -311,14 +265,7 @@ const MeetingScheduler = () => {
         ...prev,
         [date]: timeExists
           ? currentTimes.filter((t) => t !== time)
-          : [...currentTimes, time].sort((a, b) => {
-              const [aHour, aMin] = a.split(":").map(Number);
-              const [bHour, bMin] = b.split(":").map(Number);
-              if (aHour === bHour) {
-                return aMin - bMin;
-              }
-              return aHour - bHour;
-            }),
+          : [...currentTimes, time].sort(),
       };
     });
   };
@@ -339,7 +286,6 @@ const MeetingScheduler = () => {
         description: "시간 선택이 성공적으로 제출되었습니다.",
       });
 
-      // 선택 초기화
       setSelectedTimes({});
     } catch (error) {
       toast({
@@ -361,6 +307,40 @@ const MeetingScheduler = () => {
     );
   };
 
+  const handleCopyUrl = () => {
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        toast({
+          title: "링크 복사 완료",
+          description: "미팅 URL이 클립보드에 복사되었습니다.",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "복사 실패",
+          description: "URL을 복사하는데 실패했습니다.",
+          variant: "destructive",
+        });
+      });
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: meetingData.title,
+          text: meetingData.description,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      handleCopyUrl();
+    }
+  };
+
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-red-500 p-4">{error}</div>;
   if (!meetingData)
@@ -375,6 +355,14 @@ const MeetingScheduler = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">{meetingData.title}</h1>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
+            공유하기
+          </Button>
+          <Button variant="outline" onClick={handleCopyUrl}>
+            <Link className="w-4 h-4 mr-2" />
+            URL 복사
+          </Button>
           <Button
             variant={isSelectionEnabled ? "default" : "outline"}
             onClick={() => setIsSelectionEnabled(!isSelectionEnabled)}

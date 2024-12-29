@@ -1,39 +1,22 @@
-import { AuthProvider } from "./context/AuthContext";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Dashboard from "./components/auth/Dashboard";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import GoogleLogin from "./components/auth/GoogleLogin";
-import { useAuth } from "./context/AuthContext";
 import CreateMeetingPage from "./components/meeting/CreateMeetingPage";
-import MeetingScheduler from "./components/meeting/MeetingScheduler"; // 추가
-
-// 보호된 라우트 컴포넌트
-const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
-
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/login" element={<GoogleLogin />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/create" element={<CreateMeetingPage />} />
-      <Route path="/meeting/:id" element={<MeetingScheduler />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
-  );
-}
+import MeetingScheduler from "./components/meeting/MeetingScheduler";
+import OnBoarding from "./components/onBoarding/OnBoarding";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <Routes>
+          <Route path="/" element={<OnBoarding />} />
+          <Route path="/login" element={<GoogleLogin />} />
+          <Route path="/meeting">
+            <Route path="create" element={<CreateMeetingPage />} />
+            <Route path=":id" element={<MeetingScheduler />} />
+          </Route>
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   );
