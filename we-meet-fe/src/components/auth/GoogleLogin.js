@@ -12,6 +12,7 @@ const GoogleLogin = () => {
   // 이미 로그인된 경우 대시보드로 리다이렉트
   useEffect(() => {
     if (user) {
+      console.log(user);
       navigate("/dashboard");
     }
   }, [user, navigate]);

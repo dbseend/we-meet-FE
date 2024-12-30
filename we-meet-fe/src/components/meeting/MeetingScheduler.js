@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link, ChevronLeft, ChevronRight } from "lucide-react";
-import { getMeeting, submitTimeSelections } from "../../api/meeting/MeetingAPI";
+import { getMeeting, getMeetingAvailiableTimes, submitTimeSelections } from "../../api/meeting/MeetingAPI";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -32,10 +32,11 @@ const MeetingScheduler = () => {
   const [submissionData, setSubmissionData] = useState({
     meeting_id: window.location.pathname.split("/").pop(),
     user_id: user ? user.id : null,
-    user_name: user ? user.name : "",
+    user_name: user ? user.user_metadata.name : "",
     selected_times: [],
   });
   const [meetingData, setMeetingData] = useState(null);
+  const [availiableTimes, setAvailiableTimes] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
@@ -43,6 +44,7 @@ const MeetingScheduler = () => {
 
   // 미팅 데이터 불러오기
   useEffect(() => {
+    console.log(user);
     const fetchMeetingData = async () => {
       try {
         const meetingId = window.location.pathname.split("/").pop();
@@ -58,7 +60,25 @@ const MeetingScheduler = () => {
       }
     };
 
+    // 미팅 참여 가능 시간 불러오기
+    const fetchAvailiableTimes = async() =>{
+      try {
+        const meetingId = window.location.pathname.split("/").pop();
+        const { data, error: meetingError } = await getMeetingAvailiableTimes(meetingId);
+        console.log(data);
+
+        if (meetingError) throw meetingError;
+        setAvailiableTimes(data);
+      } catch (err) {
+        setError(err.message);
+        console.error("Failed to fetch meeting aviliable times data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchMeetingData();
+    fetchAvailiableTimes();
   }, []);
 
   // 시간 슬롯 생성
@@ -238,7 +258,7 @@ const MeetingScheduler = () => {
           />
         )}
         <ButtonContainer>
-          <UserName>{user ? `${user.email}님` : ""}</UserName>
+          <UserName>{user ? `${user.user_metadata.name}님` : ""}</UserName>
           <SubmitButton onClick={handleSubmit}>시간 제출</SubmitButton>
         </ButtonContainer>
       </Content>

@@ -54,6 +54,29 @@ export const getMeeting = async (meetingId) => {
   }
 };
 
+// 미팅 참여 가능 시간 조회 API
+export const getMeetingAvailiableTimes = async (meetingId) => {
+  try {
+    const { data, error } = await supabase
+      .from("meeting_participants")
+      .select("*")
+      .eq("meeting_id", meetingId);
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error("Error fetching meeting availiable times:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
 // 가능 시간 선택 제출 API
 export const submitTimeSelections = async (submissionData) => {
   console.log(submissionData);

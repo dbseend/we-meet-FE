@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { createMeeting } from "../../api/meeting/MeetingAPI";
 
 const CreateMeetingPage = () => {
@@ -261,19 +261,11 @@ const CreateMeetingPage = () => {
                       onMouseDown={() => handleMouseDown(date)}
                       onMouseEnter={() => handleMouseEnter(date)}
                       className={`
-                        p-2 text-center cursor-pointer select-none
-                        ${
-                          isPast
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
-                        ${
-                          isSelected
-                            ? "bg-blue-500 text-white hover:bg-blue-600"
-                            : ""
-                        }
-                        rounded-lg transition-colors
-                      `}
+                      p-2 text-center cursor-pointer select-none touch-action-none
+                      ${isPast ? "text-gray-300 cursor-not-allowed" : "hover:bg-gray-100"}
+                      ${isSelected ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
+                      rounded-lg transition-colors
+                    `}
                     >
                       {index + 1}
                     </div>
@@ -327,7 +319,7 @@ const CreateMeetingPage = () => {
                   time_range_start: e.target.value,
                 }))
               }
-              min="06:00"
+              // min="06:00"
               max={meetingData.time_range_end}
               className="p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
@@ -343,7 +335,7 @@ const CreateMeetingPage = () => {
                 }))
               }
               min={meetingData.time_range_start}
-              max="21:00"
+              // max="21:00"
               className="p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
