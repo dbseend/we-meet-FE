@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import styled from 'styled-components';
+import styled from "styled-components";
 import { Link, ChevronLeft, ChevronRight } from "lucide-react";
 import { getMeeting } from "../../api/meeting/MeetingAPI";
 
@@ -14,14 +14,12 @@ const DayTimeGrid = ({ date, timeSlots, selectedTimes, onTimeSelect }) => (
   <DayColumn>
     <DateHeader>{date}</DateHeader>
     <TimeGridContainer>
-      {timeSlots.map(time => (
+      {timeSlots.map((time) => (
         <TimeSlot
           key={`${date}-${time}`}
           isSelected={selectedTimes[date]?.includes(time)}
           onClick={() => onTimeSelect(date, time)}
-        >
-          {time}
-        </TimeSlot>
+        ></TimeSlot>
       ))}
     </TimeGridContainer>
   </DayColumn>
@@ -45,7 +43,7 @@ const MeetingScheduler = () => {
       try {
         const meetingId = window.location.pathname.split("/").pop();
         const { data, error: meetingError } = await getMeeting(meetingId);
-        
+
         if (meetingError) throw meetingError;
         setMeetingData(data);
       } catch (err) {
@@ -73,18 +71,19 @@ const MeetingScheduler = () => {
     return slots;
   };
 
-  // 표시할 날짜들 계산
   const getVisibleDates = () => {
     if (!meetingData?.dates) return [];
-    const start = currentDateIndex;
-    return meetingData.dates.slice(start, Math.min(start + MAX_DAYS_SHOWN, meetingData.dates.length));
+    const start = currentDateIndex * MAX_DAYS_SHOWN;
+    return meetingData.dates.slice(
+      start,
+      Math.min(start + MAX_DAYS_SHOWN, meetingData.dates.length)
+    );
   };
-
-  // 날짜 네비게이션 핸들러
+  
   const handleDateNavigation = (direction) => {
-    setCurrentDateIndex(prev => {
-      const maxIndex = meetingData.dates.length - MAX_DAYS_SHOWN;
-      if (direction === 'next') {
+    setCurrentDateIndex((prev) => {
+      const maxIndex = Math.ceil(meetingData.dates.length / MAX_DAYS_SHOWN) - 1;
+      if (direction === "next") {
         return Math.min(prev + 1, maxIndex);
       }
       return Math.max(prev - 1, 0);
@@ -93,14 +92,14 @@ const MeetingScheduler = () => {
 
   // 시간 선택 핸들러
   const handleTimeSelect = (date, time) => {
-    setSelectedTimes(prev => {
+    setSelectedTimes((prev) => {
       const currentTimes = prev[date] || [];
       const timeExists = currentTimes.includes(time);
       return {
         ...prev,
-        [date]: timeExists 
-          ? currentTimes.filter(t => t !== time)
-          : [...currentTimes, time].sort()
+        [date]: timeExists
+          ? currentTimes.filter((t) => t !== time)
+          : [...currentTimes, time].sort(),
       };
     });
   };
@@ -122,7 +121,7 @@ const MeetingScheduler = () => {
   const timeSlots = generateTimeSlots();
   const visibleDates = getVisibleDates();
   const canNavigatePrev = currentDateIndex > 0;
-  const canNavigateNext = currentDateIndex < meetingData.dates.length - MAX_DAYS_SHOWN;
+  const canNavigateNext = (currentDateIndex + 1) * MAX_DAYS_SHOWN < meetingData.dates.length;
 
   return (
     <Container>
@@ -138,8 +137,8 @@ const MeetingScheduler = () => {
 
       {/* 날짜 네비게이션 */}
       <DateNavigation>
-        <NavButton 
-          onClick={() => handleDateNavigation('prev')}
+        <NavButton
+          onClick={() => handleDateNavigation("prev")}
           disabled={!canNavigatePrev}
         >
           <ChevronLeft size={24} />
@@ -147,8 +146,8 @@ const MeetingScheduler = () => {
         <DateDisplay>
           {visibleDates[0]} ~ {visibleDates[visibleDates.length - 1]}
         </DateDisplay>
-        <NavButton 
-          onClick={() => handleDateNavigation('next')}
+        <NavButton
+          onClick={() => handleDateNavigation("next")}
           disabled={!canNavigateNext}
         >
           <ChevronRight size={24} />
@@ -158,16 +157,15 @@ const MeetingScheduler = () => {
       {/* 시간표 */}
       <TimeTableSection>
         <TimeLabels>
-          <DateHeader style={{ visibility: 'hidden' }}>Date</DateHeader>
-          {timeSlots.map((time, index) => 
-            index % 2 === 0 && (
-              <TimeLabel key={time}>{time}</TimeLabel>
-            )
+          <DateHeader style={{ visibility: "hidden" }}>Date</DateHeader>
+          {timeSlots.map(
+            (time, index) =>
+              index % 2 === 0 && <TimeLabel key={time}>{time}</TimeLabel>
           )}
         </TimeLabels>
 
         <GridContainer daysCount={visibleDates.length}>
-          {visibleDates.map(date => (
+          {visibleDates.map((date) => (
             <DayTimeGrid
               key={date}
               date={date}
@@ -186,11 +184,11 @@ const MeetingScheduler = () => {
 const TimeSlot = styled.div`
   border-right: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
-  height: 36px; // 높이 줄임
+  height: 24px; // 높이 줄임
   cursor: pointer;
   user-select: none;
-  background-color: ${props => props.isSelected ? '#4b9bff' : 'white'};
-  color: ${props => props.isSelected ? 'white' : 'black'};
+  background-color: ${(props) => (props.isSelected ? "#4b9bff" : "white")};
+  color: ${(props) => (props.isSelected ? "white" : "black")};
   transition: background-color 0.15s ease-in-out;
   display: flex;
   align-items: center;
@@ -199,22 +197,19 @@ const TimeSlot = styled.div`
   touch-action: manipulation;
 
   &:active {
-    background-color: ${props => props.isSelected ? '#3b82f6' : '#f3f4f6'};
+    background-color: ${(props) => (props.isSelected ? "#3b82f6" : "#f3f4f6")};
   }
 `;
 
 // 시간 라벨 스타일 수정
 const TimeLabel = styled.div`
-  height: 36px; // TimeSlot과 동일한 높이
+  height: 24px; // TimeSlot과 동일한 높이
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding-right: 0.25rem;
   color: #666;
   font-size: 0.75rem;
-  border-right: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
 `;
 
 // 날짜 헤더 스타일 수정
@@ -234,7 +229,7 @@ const DateHeader = styled.div`
 // 그리드 컨테이너 스타일 수정
 const GridContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(${props => props.daysCount}, 1fr);
+  grid-template-columns: repeat(${(props) => props.daysCount}, 1fr);
   flex: 1;
   min-width: 0;
   border-top: 1px solid #e5e7eb;
@@ -244,16 +239,22 @@ const GridContainer = styled.div`
 // 시간표 섹션 스타일 수정
 const TimeTableSection = styled.div`
   display: flex;
-  margin: 0 -1rem; // 네거티브 마진으로 컨테이너 패딩 상쇄
+  // margin: 0 -1rem; // 네거티브 마진으로 컨테이너 패딩 상쇄
 `;
 
 // 시간 라벨 컨테이너 스타일 수정
 const TimeLabels = styled.div`
-  width: 50px; // 너비 줄임
+  width: 50px;
   flex-shrink: 0;
-  border-top: 1px solid #e5e7eb;
-  border-left: 1px solid #e5e7eb;
-  background: #f9fafb;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+
+  ${TimeLabel} {
+    position: relative;
+    top: -12px;
+    height: 48px;
+  }
 `;
 
 // 전체 컨테이너 스타일 수정
@@ -270,15 +271,15 @@ const NavButton = styled.button`
   padding: 0.5rem;
   border: none;
   background: none;
-  color: ${props => props.disabled ? '#ccc' : '#333'};
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  color: ${(props) => (props.disabled ? "#ccc" : "#333")};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 40px; // 최소 터치 영역 확보
 
   &:active {
-    transform: ${props => props.disabled ? 'none' : 'scale(0.95)'};
+    transform: ${(props) => (props.disabled ? "none" : "scale(0.95)")};
   }
 `;
 
@@ -325,7 +326,6 @@ const Description = styled.p`
   font-size: 0.875rem;
   margin-bottom: 1rem;
 `;
-
 
 const DateNavigation = styled.div`
   display: flex;
