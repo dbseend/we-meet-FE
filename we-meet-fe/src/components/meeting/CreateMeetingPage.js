@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import {useNavigate} from "react-router-dom";
 import { createMeeting } from "../../api/meeting/MeetingAPI";
 
 const CreateMeetingPage = () => {
@@ -16,6 +17,7 @@ const CreateMeetingPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [copied, setCopied] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
+  const navigate = useNavigate();
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -117,7 +119,7 @@ const CreateMeetingPage = () => {
         navigator.clipboard.writeText(result.url);
         setCopied(true);
         // 필요한 경우 다음 페이지로 이동
-        // navigate(`/meeting/${result.data.id}`);
+        navigate(`/meeting/${result.data[0].meeting_id}`);
       } else {
         setShowAlert(true);
         setErrorMessage(result.error); // 에러 메시지 상태 추가 필요
