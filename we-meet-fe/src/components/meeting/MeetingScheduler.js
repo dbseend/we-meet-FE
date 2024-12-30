@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link, ChevronLeft, ChevronRight } from "lucide-react";
-import { getMeeting } from "../../api/meeting/MeetingAPI";
-
-/**
- * TimeSlot Component - 개별 시간 슬롯을 표시
- */
+import { getMeeting, submitTimeSelections } from "../../api/meeting/MeetingAPI";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * DayTimeGrid Component - 단일 날짜의 시간표를 표시
@@ -17,7 +14,9 @@ const DayTimeGrid = ({ date, timeSlots, selectedTimes, onTimeSelect }) => (
       {timeSlots.map((time) => (
         <TimeSlot
           key={`${date}-${time}`}
-          isSelected={selectedTimes[date]?.includes(time)}
+          isSelected={selectedTimes.some(
+            (slot) => slot.date === date && slot.time === time
+          )}
           onClick={() => onTimeSelect(date, time)}
         ></TimeSlot>
       ))}
@@ -29,9 +28,14 @@ const DayTimeGrid = ({ date, timeSlots, selectedTimes, onTimeSelect }) => (
  * MeetingScheduler Component - 메인 컴포넌트
  */
 const MeetingScheduler = () => {
-  // 상태 관리
+  const { user } = useAuth();
+  const [submissionData, setSubmissionData] = useState({
+    meeting_id: window.location.pathname.split("/").pop(),
+    user_id: user ? user.id : null,
+    user_name: user ? user.name : "",
+    selected_times: [],
+  });
   const [meetingData, setMeetingData] = useState(null);
-  const [selectedTimes, setSelectedTimes] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
@@ -79,7 +83,7 @@ const MeetingScheduler = () => {
       Math.min(start + MAX_DAYS_SHOWN, meetingData.dates.length)
     );
   };
-  
+
   const handleDateNavigation = (direction) => {
     setCurrentDateIndex((prev) => {
       const maxIndex = Math.ceil(meetingData.dates.length / MAX_DAYS_SHOWN) - 1;
@@ -92,16 +96,58 @@ const MeetingScheduler = () => {
 
   // 시간 선택 핸들러
   const handleTimeSelect = (date, time) => {
-    setSelectedTimes((prev) => {
-      const currentTimes = prev[date] || [];
-      const timeExists = currentTimes.includes(time);
+    setSubmissionData((prev) => {
+      const updatedTimes = [...prev.selected_times];
+      console.log(updatedTimes);
+      const timeSlot = { date, time };
+      const existingIndex = updatedTimes.findIndex(
+        (slot) => slot.date === date && slot.time === time
+      );
+
+      if (existingIndex >= 0) {
+        updatedTimes.splice(existingIndex, 1);
+      } else {
+        updatedTimes.push(timeSlot);
+        updatedTimes.sort((a, b) =>
+          a.date === b.date
+            ? a.time.localeCompare(b.time)
+            : a.date.localeCompare(b.date)
+        );
+      }
+
       return {
         ...prev,
-        [date]: timeExists
-          ? currentTimes.filter((t) => t !== time)
-          : [...currentTimes, time].sort(),
+        selected_times: updatedTimes,
       };
     });
+  };
+
+  const handleSubmit = async () => {
+    if (submissionData.user_name == "") {
+      alert("이름을 입력해주세요");
+      return;
+    }
+
+    if (submissionData.selected_times.length === 0) {
+      alert("시간을 선택해주세요");
+      return;
+    }
+
+    const formattedTimes = submissionData.selected_times.map(slot => 
+      new Date(`${slot.date} ${slot.time}`).toISOString().replace('Z', '+00')
+     );
+
+    setSubmissionData((prev) => ({
+      ...prev,
+      selected_times: formattedTimes,
+    }));
+
+    const submitData = {
+      ...submissionData,
+      selected_times: formattedTimes
+    };
+
+    await submitTimeSelections(submitData);
   };
 
   // URL 복사 핸들러
@@ -121,7 +167,8 @@ const MeetingScheduler = () => {
   const timeSlots = generateTimeSlots();
   const visibleDates = getVisibleDates();
   const canNavigatePrev = currentDateIndex > 0;
-  const canNavigateNext = (currentDateIndex + 1) * MAX_DAYS_SHOWN < meetingData.dates.length;
+  const canNavigateNext =
+    (currentDateIndex + 1) * MAX_DAYS_SHOWN < meetingData.dates.length;
 
   return (
     <Container>
@@ -170,12 +217,31 @@ const MeetingScheduler = () => {
               key={date}
               date={date}
               timeSlots={timeSlots}
-              selectedTimes={selectedTimes}
+              selectedTimes={submissionData.selected_times}
               onTimeSelect={handleTimeSelect}
             />
           ))}
         </GridContainer>
       </TimeTableSection>
+
+      <Content>
+        {!user && (
+          <Input
+            placeholder="이름을 입력하세요"
+            value={submissionData.user_name}
+            onChange={(e) =>
+              setSubmissionData((prev) => ({
+                ...prev,
+                user_name: e.target.value,
+              }))
+            }
+          />
+        )}
+        <ButtonContainer>
+          <UserName>{user ? `${user.email}님` : ""}</UserName>
+          <SubmitButton onClick={handleSubmit}>시간 제출</SubmitButton>
+        </ButtonContainer>
+      </Content>
     </Container>
   );
 };
@@ -342,6 +408,43 @@ const DayColumn = styled.div`
 const TimeGridContainer = styled.div`
   display: flex;
   flex-direction: column;
+`;
+
+const Content = styled.div`
+  padding: 1.5rem;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const UserName = styled.span`
+  font-size: 0.875rem;
+  color: #666;
+`;
+
+const SubmitButton = styled.button`
+  width: 8rem;
+  padding: 0.625rem;
+  background: #4b9bff;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+
+  &:active {
+    background: #3b82f6;
+  }
 `;
 
 export default MeetingScheduler;

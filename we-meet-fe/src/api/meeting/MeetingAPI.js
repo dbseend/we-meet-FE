@@ -54,99 +54,30 @@ export const getMeeting = async (meetingId) => {
   }
 };
 
-// 미팅 목록 조회 API
-export const getMeetings = async () => {
-  try {
-    const { data, error } = await supabase
-      .from("meetings")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    return {
-      success: true,
-      data,
-    };
-  } catch (error) {
-    console.error("Error fetching meetings:", error);
-    return {
-      success: false,
-      error: error.message,
-    };
-  }
-};
-
-// 미팅 업데이트 API
-export const updateMeeting = async (meetingId, updateData) => {
-  try {
-    const { data, error } = await supabase
-      .from("meetings")
-      .update({
-        title: updateData.title,
-        description: updateData.description,
-        dates: updateData.dates,
-        time_range: updateData.timeRange,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", meetingId)
-      .select();
-
-    if (error) throw error;
-
-    return {
-      success: true,
-      data: data[0],
-    };
-  } catch (error) {
-    console.error("Error updating meeting:", error);
-    return {
-      success: false,
-      error: error.message,
-    };
-  }
-};
-
-// 미팅 삭제 API
-export const deleteMeeting = async (meetingId) => {
-  try {
-    const { error } = await supabase
-      .from("meetings")
-      .delete()
-      .eq("id", meetingId);
-
-    if (error) throw error;
-
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error("Error deleting meeting:", error);
-    return {
-      success: false,
-      error: error.message,
-    };
-  }
-};
-
+// 가능 시간 선택 제출 API
 export const submitTimeSelections = async (submissionData) => {
+  console.log(submissionData);
+
   try {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("time_selections").insert({
-      meeting_id: submissionData.meetingId,
-      user_id: user?.id || null,
-      user_name: submissionData.userName,
-      selected_times: submissionData.selectedTimes,
-    });
+    const { data, error } = await supabase
+      .from("meeting_participants")
+      .insert({
+        meeting_id: submissionData.meeting_id,
+        user_id: submissionData.user_id,
+        user_name: submissionData.user_name,
+        selected_times: submissionData.selected_times,
+      })
+      .select();
 
     if (error) throw error;
-    return { error: null };
+    return { success: true, data };
   } catch (error) {
     console.error("Error submitting time selections:", error);
-    return { error };
+    return { success: false, error };
   }
 };
 
