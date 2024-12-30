@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import GoogleLogin from "./components/auth/GoogleLogin";
 import CreateMeetingPage from "./components/meeting/CreateMeetingPage";
 import MeetingScheduler from "./components/meeting/MeetingScheduler";
