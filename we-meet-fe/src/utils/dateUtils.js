@@ -10,20 +10,6 @@ export const convertDisplayTimeToDB = (displayTime) => {
 };
 
 /**
- * DB 시간(UTC)을 화면 표시용 시간으로 변환
- * @param {string} dbTime - "HH:mm" 형식의 UTC 시간
- * @returns {string} "HH:mm" 형식의 표시 시간
- */
-// TODO: 미팅 생성 시 설정한 시작 시간으로 계산
-export const convertDBTimeToDisplay = (dbTime) => {
-  const [hours, minutes] = dbTime.split(":").map(Number);
-  const displayHours = (hours + 9) % 24; // UTC -> KST
-  return `${displayHours.toString().padStart(2, "0")}:${minutes
-    .toString()
-    .padStart(2, "0")}`;
-};
-
-/**
  * ISO 문자열을 날짜와 시간으로 분리
  * @param {string} isoString - ISO 형식의 날짜/시간 문자열
  * @returns {object} { date: "YYYY-MM-DD", time: "HH:mm" }

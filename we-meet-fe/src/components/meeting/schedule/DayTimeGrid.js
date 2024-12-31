@@ -1,9 +1,6 @@
 import styled from "styled-components";
 import TimeSlot from "./TimSlot";
-import {
-  convertDBTimeToDisplay,
-  parseISOString,
-} from "../../../utils/dateUtils";
+import { parseISOString } from "../../../utils/dateUtils";
 
 /**
  * DayTimeGrid 컴포넌트 - 하루의 전체 시간표를 표시
@@ -41,9 +38,8 @@ const DayTimeGrid = ({
       )
       .filter((at) => {
         return at.selected_times.some((datetime) => {
-          const { date: atDate, time: dbTime } = parseISOString(datetime);
-          const displayTime = convertDBTimeToDisplay(dbTime);
-          return displayTime === time && atDate === date;
+          const { date: atDate, time: atTime } = parseISOString(datetime);
+          return atTime === time && atDate === date;
         });
       })
       .map((at) => ({

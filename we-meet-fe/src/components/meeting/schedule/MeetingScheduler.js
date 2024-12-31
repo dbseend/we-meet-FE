@@ -106,34 +106,37 @@ const MeetingScheduler = () => {
   };
 
   // 시간 선택 핸들러
-  const handleTimeSelect = (date, time) => {
-    setSubmissionData((prev) => {
-      const updatedTimes = [...prev.selected_times];
-      console.log(updatedTimes);
-      const timeSlot = { date, time };
-      const existingIndex = updatedTimes.findIndex(
-        (slot) => slot.date === date && slot.time === time
-      );
-
-      if (existingIndex >= 0) {
-        updatedTimes.splice(existingIndex, 1);
-      } else {
-        updatedTimes.push(timeSlot);
-        updatedTimes.sort((a, b) =>
-          a.date === b.date
-            ? a.time.localeCompare(b.time)
-            : a.date.localeCompare(b.date)
-        );
-      }
-
-      return {
-        ...prev,
-        selected_times: updatedTimes,
-      };
-    });
+  const handleTimeSelect = (date, time, meetingStartTime = "07:00") => {
+    console.log("date: ", date, " time: ", time );
+    const [hour, minutes] = time.split(":").map(Number);
+    const actualTime = `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+  
+    setSubmissionData((prev) => ({
+      ...prev,
+      selected_times: prev.selected_times.some(
+        slot => slot.date === date && slot.time === actualTime
+      )
+        ? prev.selected_times.filter(
+            slot => !(slot.date === date && slot.time === actualTime)
+          )
+        : [...prev.selected_times, { date, time: actualTime }].sort((a, b) =>
+            a.date === b.date
+              ? a.time.localeCompare(b.time)
+              : a.date.localeCompare(b.date)
+          ),
+    }));
   };
 
   const handleAvailiableTimeSubmit = async () => {
+    console.log(submissionData.selected_times);
+    const formattedTimes = submissionData.selected_times.map((slot) => {
+      const [year, month, day] = slot.date.split('-');
+      const [hours, minutes] = slot.time.split(':');
+      return new Date(Date.UTC(year, month - 1, day, hours, minutes))
+        .toISOString()
+        .replace("Z", "+00");
+    });
+    console.log(formattedTimes);
     if (submissionData.user_name == "") {
       alert("이름을 입력해주세요");
       return;
@@ -144,9 +147,6 @@ const MeetingScheduler = () => {
       return;
     }
 
-    const formattedTimes = submissionData.selected_times.map((slot) =>
-      new Date(`${slot.date} ${slot.time}`).toISOString().replace("Z", "+00")
-    );
 
     setSubmissionData((prev) => ({
       ...prev,
