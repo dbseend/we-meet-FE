@@ -13,23 +13,7 @@ const CreateMeetingPage = () => {
   });
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [copied, setCopied] = useState(null);
-  const [showAlert, setShowAlert] = useState(false);
   const navigate = useNavigate();
-
-  const daysInMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  ).getDate();
-
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1
-  ).getDay();
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
   const months = [
@@ -46,6 +30,19 @@ const CreateMeetingPage = () => {
     "11월",
     "12월",
   ];
+  
+  const daysInMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0
+  ).getDate();
+
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  ).getDay();
+
 
   const handlePrevMonth = () => {
     setCurrentDate(
@@ -105,31 +102,20 @@ const CreateMeetingPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!meetingData.title || meetingData.dates.length === 0) {
-      setShowAlert(true);
       return;
     }
 
     try {
-      setIsLoading(true); // 로딩 상태 추가 필요
       const result = await createMeeting(meetingData);
       console.log("result: ", result);
 
       if (result.success) {
-        // 성공 시 URL 복사 또는 다음 페이지로 이동
-        navigator.clipboard.writeText(result.url);
-        setCopied(true);
         // 필요한 경우 다음 페이지로 이동
         navigate(`/meeting/${result.data[0].meeting_id}`);
-      } else {
-        setShowAlert(true);
-        setErrorMessage(result.error); // 에러 메시지 상태 추가 필요
       }
     } catch (error) {
       console.error("Error creating meeting:", error);
-      setShowAlert(true);
-      setErrorMessage("회의 생성 중 오류가 발생했습니다."); // 에러 메시지 상태 추가 필요
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -262,8 +248,16 @@ const CreateMeetingPage = () => {
                       onMouseEnter={() => handleMouseEnter(date)}
                       className={`
                       p-2 text-center cursor-pointer select-none touch-action-none
-                      ${isPast ? "text-gray-300 cursor-not-allowed" : "hover:bg-gray-100"}
-                      ${isSelected ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
+                      ${
+                        isPast
+                          ? "text-gray-300 cursor-not-allowed"
+                          : "hover:bg-gray-100"
+                      }
+                      ${
+                        isSelected
+                          ? "bg-blue-500 text-white hover:bg-blue-600"
+                          : ""
+                      }
                       rounded-lg transition-colors
                     `}
                     >
@@ -319,7 +313,6 @@ const CreateMeetingPage = () => {
                   time_range_start: e.target.value,
                 }))
               }
-              // min="06:00"
               max={meetingData.time_range_end}
               className="p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
@@ -335,7 +328,6 @@ const CreateMeetingPage = () => {
                 }))
               }
               min={meetingData.time_range_start}
-              // max="21:00"
               className="p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
