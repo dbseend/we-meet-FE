@@ -14,6 +14,7 @@ export const convertDisplayTimeToDB = (displayTime) => {
  * @param {string} dbTime - "HH:mm" 형식의 UTC 시간
  * @returns {string} "HH:mm" 형식의 표시 시간
  */
+// TODO: 미팅 생성 시 설정한 시작 시간으로 계산
 export const convertDBTimeToDisplay = (dbTime) => {
   const [hours, minutes] = dbTime.split(":").map(Number);
   const displayHours = (hours + 9) % 24; // UTC -> KST

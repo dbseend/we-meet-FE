@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import GoogleLogin from "./components/auth/GoogleLogin";
-import CreateMeetingPage from "./components/meeting/CreateMeetingPage";
-import MeetingScheduler from "./components/meeting/MeetingScheduler";
+import CreateMeetingPage from "./components/meeting/create/CreateMeetingPage";
+import MeetingScheduler from "./components/meeting/schedule/MeetingScheduler";
 import OnBoarding from "./components/onBoarding/OnBoarding";
 import { AuthProvider } from "./context/AuthContext";
 
