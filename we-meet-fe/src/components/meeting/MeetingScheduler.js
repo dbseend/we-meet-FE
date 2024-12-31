@@ -1,28 +1,148 @@
-import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Link } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Link, ChevronLeft, ChevronRight } from "lucide-react";
-import { getMeeting, getMeetingAvailiableTimes, submitTimeSelections } from "../../api/meeting/MeetingAPI";
+import {
+  getMeeting,
+  getMeetingAvailiableTimes,
+  submitTimeSelections,
+} from "../../api/meeting/MeetingAPI";
 import { useAuth } from "../../context/AuthContext";
+
+const TimeSlot = ({ date, time, isSelected, onClick, availableUsers = [] }) => {
+  const userCount = availableUsers.length;
+
+  const getBackgroundColor = () => {
+    if (isSelected) return "#4b9bff";
+    if (userCount === 0) return "white";
+    const intensity = Math.min(255, 255 - userCount * 30);
+    return `rgb(255, ${intensity}, 0)`;
+  };
+
+  return (
+    <StyledTimeSlot
+      backgroundColor={getBackgroundColor()}
+      isSelected={isSelected}
+      onClick={onClick}
+    >
+      {userCount > 0 && (
+        <Tooltip>{availableUsers.map((user) => user.name).join(", ")}</Tooltip>
+      )}
+    </StyledTimeSlot>
+  );
+};
+
+const StyledTimeSlot = styled.div`
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  height: 24px;
+  cursor: pointer;
+  user-select: none;
+  background-color: ${(props) => props.backgroundColor};
+  color: ${(props) => (props.isSelected ? "white" : "black")};
+  transition: background-color 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.813rem;
+  position: relative;
+
+  &:hover {
+    background-color: ${(props) => (props.isSelected ? "#3b82f6" : "#f3f4f6")};
+  }
+
+  &:active {
+    background-color: ${(props) => (props.isSelected ? "#2563eb" : "#e5e7eb")};
+  }
+`;
+
+const Tooltip = styled.div`
+  position: absolute;
+  visibility: hidden;
+  background-color: #1f2937;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  z-index: 10;
+  top: -2rem;
+
+  ${StyledTimeSlot}:hover & {
+    visibility: visible;
+  }
+`;
 
 /**
  * DayTimeGrid Component - 단일 날짜의 시간표를 표시
  */
-const DayTimeGrid = ({ date, timeSlots, selectedTimes, onTimeSelect }) => (
-  <DayColumn>
-    <DateHeader>{date}</DateHeader>
-    <TimeGridContainer>
-      {timeSlots.map((time) => (
-        <TimeSlot
-          key={`${date}-${time}`}
-          isSelected={selectedTimes.some(
-            (slot) => slot.date === date && slot.time === time
-          )}
-          onClick={() => onTimeSelect(date, time)}
-        ></TimeSlot>
-      ))}
-    </TimeGridContainer>
-  </DayColumn>
-);
+ const DayTimeGrid = ({ date, timeSlots, selectedTimes, onTimeSelect, availableTimes }) => {
+  const getAvailableUsers = (date, time) => {
+    console.log('Checking available users for:', { date, time });
+    console.log('Available times data:', availableTimes);
+    
+    if (!availableTimes) {
+      console.log('No available times data');
+      return [];
+    }
+
+    // 표시 시간을 DB 시간으로 변환 (9시간 차이)
+    const convertDisplayTimeToDB = (displayTime) => {
+      const [hours, minutes] = displayTime.split(':').map(Number);
+      const dbHours = (hours - 9).toString().padStart(2, '0');  // 9시간 차감
+      return `${dbHours}:${minutes.toString().padStart(2, '0')}`;
+    };
+    
+    const dbTime = convertDisplayTimeToDB(time);
+    console.log('Converting display time to DB time:', { displayTime: time, dbTime });
+    
+    const filteredUsers = availableTimes.filter(at => {
+      return at.selected_times.some(datetime => {
+        const parsedDateTime = datetime.split('+')[0];
+        const atDate = parsedDateTime.split('T')[0];
+        
+        const timeComponents = parsedDateTime.split('T')[1].split(':');
+        const atTime = `${timeComponents[0]}:${timeComponents[1]}`;
+        
+        console.log('Comparing:', { 
+          atDate, 
+          atTime,
+          dbTime,
+          userName: at.user_name,
+          matchesDate: atDate === date, 
+          matchesTime: atTime === dbTime 
+        });
+        
+        return atTime === dbTime && atDate === date;
+      });
+    }).map(at => ({
+      name: at.user_name,
+      id: at.user_id
+    }));
+    
+    console.log('Filtered users:', filteredUsers);
+    return filteredUsers;
+  };
+
+   return (
+    <DayColumn>
+      <DateHeader>{date}</DateHeader>
+      <TimeGridContainer>
+        {timeSlots.map((time) => (
+          <TimeSlot
+            key={`${date}-${time}`}
+            date={date}
+            time={time}
+            isSelected={selectedTimes.some(
+              (slot) => slot.date === date && slot.time === time
+            )}
+            onClick={() => onTimeSelect(date, time)}
+            availableUsers={getAvailableUsers(date, time)}
+          />
+        ))}
+      </TimeGridContainer>
+    </DayColumn>
+  );
+};
 
 /**
  * MeetingScheduler Component - 메인 컴포넌트
@@ -61,10 +181,12 @@ const MeetingScheduler = () => {
     };
 
     // 미팅 참여 가능 시간 불러오기
-    const fetchAvailiableTimes = async() =>{
+    const fetchAvailiableTimes = async () => {
       try {
         const meetingId = window.location.pathname.split("/").pop();
-        const { data, error: meetingError } = await getMeetingAvailiableTimes(meetingId);
+        const { data, error: meetingError } = await getMeetingAvailiableTimes(
+          meetingId
+        );
         console.log(data);
 
         if (meetingError) throw meetingError;
@@ -75,7 +197,7 @@ const MeetingScheduler = () => {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchMeetingData();
     fetchAvailiableTimes();
@@ -153,9 +275,9 @@ const MeetingScheduler = () => {
       return;
     }
 
-    const formattedTimes = submissionData.selected_times.map(slot => 
-      new Date(`${slot.date} ${slot.time}`).toISOString().replace('Z', '+00')
-     );
+    const formattedTimes = submissionData.selected_times.map((slot) =>
+      new Date(`${slot.date} ${slot.time}`).toISOString().replace("Z", "+00")
+    );
 
     setSubmissionData((prev) => ({
       ...prev,
@@ -164,7 +286,7 @@ const MeetingScheduler = () => {
 
     const submitData = {
       ...submissionData,
-      selected_times: formattedTimes
+      selected_times: formattedTimes,
     };
 
     await submitTimeSelections(submitData);
@@ -225,9 +347,8 @@ const MeetingScheduler = () => {
       <TimeTableSection>
         <TimeLabels>
           <DateHeader style={{ visibility: "hidden" }}>Date</DateHeader>
-          {timeSlots.map(
-            (time, index) =>
-              index % 2 === 0 && <TimeLabel key={time}>{time}</TimeLabel>
+          {timeSlots.map((time, index) =>
+            index % 2 === 0 ? <TimeLabel key={time}>{time}</TimeLabel> : null
           )}
         </TimeLabels>
 
@@ -239,6 +360,7 @@ const MeetingScheduler = () => {
               timeSlots={timeSlots}
               selectedTimes={submissionData.selected_times}
               onTimeSelect={handleTimeSelect}
+              availableTimes={availiableTimes}
             />
           ))}
         </GridContainer>
@@ -267,25 +389,25 @@ const MeetingScheduler = () => {
 };
 
 // TimeSlot 스타일 변경
-const TimeSlot = styled.div`
-  border-right: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  height: 24px; // 높이 줄임
-  cursor: pointer;
-  user-select: none;
-  background-color: ${(props) => (props.isSelected ? "#4b9bff" : "white")};
-  color: ${(props) => (props.isSelected ? "white" : "black")};
-  transition: background-color 0.15s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.813rem;
-  touch-action: manipulation;
+// const TimeSlot = styled.div`
+//   border-right: 1px solid #e5e7eb;
+//   border-bottom: 1px solid #e5e7eb;
+//   height: 24px; // 높이 줄임
+//   cursor: pointer;
+//   user-select: none;
+//   background-color: ${(props) => (props.isSelected ? "#4b9bff" : "white")};
+//   color: ${(props) => (props.isSelected ? "white" : "black")};
+//   transition: background-color 0.15s ease-in-out;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   font-size: 0.813rem;
+//   touch-action: manipulation;
 
-  &:active {
-    background-color: ${(props) => (props.isSelected ? "#3b82f6" : "#f3f4f6")};
-  }
-`;
+//   &:active {
+//     background-color: ${(props) => (props.isSelected ? "#3b82f6" : "#f3f4f6")};
+//   }
+// `;
 
 // 시간 라벨 스타일 수정
 const TimeLabel = styled.div`
