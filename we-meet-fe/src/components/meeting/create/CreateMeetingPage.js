@@ -2,10 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { createMeeting } from "../../../api/meeting/MeetingAPI";
+import { useAuth } from "../../../context/AuthContext";
+import { generateUUID } from "../../../utils/formatUtils";
 
 const CreateMeetingPage = () => {
+  const { user, loading, signOut } = useAuth();
   // 미팅 등록 시 필요한 정보
   const [meetingData, setMeetingData] = useState({
+    creator_id: user ? user.id : generateUUID(),
     title: "",
     description: "",
     dates: [],
@@ -60,22 +64,22 @@ const CreateMeetingPage = () => {
     };
   }, []);
 
-    // 마우스 이벤트 핸들러 - 날짜 선택
-    const handleMouseDown = (date) => {
-      if (date < new Date(new Date().setHours(0, 0, 0, 0))) return;
-      setIsDragging(true);
+  // 마우스 이벤트 핸들러 - 날짜 선택
+  const handleMouseDown = (date) => {
+    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return;
+    setIsDragging(true);
+    toggleDateSelection(date);
+  };
+
+  const handleMouseEnter = (date) => {
+    if (isDragging) {
       toggleDateSelection(date);
-    };
-  
-    const handleMouseEnter = (date) => {
-      if (isDragging) {
-        toggleDateSelection(date);
-      }
-    };
-  
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
   // Calculate calendar grid properties
   const daysInMonth = new Date(

@@ -90,7 +90,7 @@ export const submitTimeSelections = async (submissionData) => {
       .from("meeting_participants")
       .insert({
         meeting_id: submissionData.meeting_id,
-        user_id: submissionData.user_id,
+        participant_id: submissionData.participant_id,
         user_name: submissionData.user_name,
         selected_times: submissionData.selected_times,
       })

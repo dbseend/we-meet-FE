@@ -25,6 +25,7 @@ const DayTimeGrid = ({
   selectedTimes,
   onTimeSelect,
   availableTimes,
+  selectedIds,
 }) => {
   // 해당 날짜, 시간을 선택한 사용자 필터 함수
   const getAvailableUsers = (date, time) => {
@@ -35,6 +36,9 @@ const DayTimeGrid = ({
     }
 
     const filteredUsers = availableTimes
+      .filter(
+        (at) => !selectedIds?.length || selectedIds.includes(at.participant_id)
+      )
       .filter((at) => {
         return at.selected_times.some((datetime) => {
           const { date: atDate, time: dbTime } = parseISOString(datetime);

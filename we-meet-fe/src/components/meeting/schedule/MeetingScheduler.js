@@ -4,10 +4,12 @@ import styled from "styled-components";
 import {
   getMeeting,
   getMeetingAvailiableTimes,
-  submitTimeSelections
+  submitTimeSelections,
 } from "../../../api/meeting/MeetingAPI";
 import { useAuth } from "../../../context/AuthContext";
 import DayTimeGrid from "./DayTimeGrid";
+import ParticipantList from "./ParticipantList";
+import { generateUUID } from "../../../utils/formatUtils";
 
 /**
  * MeetingScheduler - 메인 컴포넌트
@@ -16,13 +18,15 @@ import DayTimeGrid from "./DayTimeGrid";
 const MeetingScheduler = () => {
   const { user } = useAuth();
   const [submissionData, setSubmissionData] = useState({
+    participant_id: user ? user.id : generateUUID(),
     meeting_id: window.location.pathname.split("/").pop(),
-    user_id: user ? user.id : null,
     user_name: user ? user.user_metadata.name : "",
     selected_times: [],
   });
+
   const [meetingData, setMeetingData] = useState(null);
   const [availiableTimes, setAvailiableTimes] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
@@ -52,6 +56,7 @@ const MeetingScheduler = () => {
         const { data, error: meetingError } = await getMeetingAvailiableTimes(
           meetingId
         );
+        console.log("fetchAvailiableTimes ", data);
 
         if (meetingError) throw meetingError;
         setAvailiableTimes(data);
@@ -225,6 +230,7 @@ const MeetingScheduler = () => {
               selectedTimes={submissionData.selected_times}
               onTimeSelect={handleTimeSelect}
               availableTimes={availiableTimes}
+              selectedIds={selectedIds}
             />
           ))}
         </GridContainer>
@@ -245,9 +251,19 @@ const MeetingScheduler = () => {
         )}
         <ButtonContainer>
           <UserName>{user ? `${user.user_metadata.name}님` : ""}</UserName>
-          <SubmitButton onClick={handleAvailiableTimeSubmit}>시간 제출</SubmitButton>
+          <SubmitButton onClick={handleAvailiableTimeSubmit}>
+            시간 제출
+          </SubmitButton>
         </ButtonContainer>
       </Content>
+
+      {availiableTimes && (
+        <ParticipantList
+          availableTimes={availiableTimes}
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
+        />
+      )}
     </Container>
   );
 };
