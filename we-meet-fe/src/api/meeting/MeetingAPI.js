@@ -109,6 +109,46 @@ export const submitTimeSelections = async (submissionData) => {
   }
 };
 
+export const getUserMeetings = async (userId) => {
+  try {
+    // 미팅 참여자 테이블에서 사용자가 참여한 미팅 ID들을 조회
+    const { data: participantData, error: participantError } = await supabase
+      .from('meeting_participants')
+      .select('meeting_id')
+      .eq('participant_id', userId);
+
+    if (participantError) throw participantError;
+
+    // 참여한 미팅 ID 목록 추출
+    const meetingIds = participantData.map(item => item.meeting_id);
+
+    // 해당 미팅들의 상세 정보 조회
+    const { data: meetingsData, error: meetingsError } = await supabase
+      .from('meetings')
+      .select(`
+        *,
+        meeting_participants (
+          user_name,
+          selected_times
+        )
+      `)
+      .in('meeting_id', meetingIds);
+
+    if (meetingsError) throw meetingsError;
+
+    return {
+      success: true,
+      data: meetingsData
+    };
+  } catch (error) {
+    console.error('Error fetching user meetings:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 export const checkLoginStatus = async () => {
   try {
     const {
