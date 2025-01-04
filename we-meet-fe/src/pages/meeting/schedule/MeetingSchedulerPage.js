@@ -98,12 +98,6 @@ const MeetingSchedulerPage = () => {
 
     fetchMeetingData();
     fetchAvailiableTimes();
-    if (user) {
-      console.log("user:", user);
-      fetchEvents();
-    } else {
-      console.log("No user");
-    }
   }, []);
 
   // 시간 슬롯 생성
@@ -263,6 +257,7 @@ const MeetingSchedulerPage = () => {
               date={date}
               timeSlots={timeSlots}
               selectedTimes={submissionData.selected_times}
+              events={events[date] || []}
               onTimeSelect={handleTimeSelect}
               availableTimes={availiableTimes}
               selectedIds={selectedIds}

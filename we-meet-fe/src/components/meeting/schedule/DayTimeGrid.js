@@ -14,6 +14,7 @@ import { parseISOString } from "../../../utils/dateUtils";
  *   user_name: string,
  *   selected_times: Array<string>
  * }>} availableTimes - 각 사용자별 가능한 시간 정보
+ * @param {Array} events - 해당 날짜의 Google Calendar 이벤트 목록
  * @returns {JSX.Element} 하루 시간표 그리드 컴포넌트
  */
 const DayTimeGrid = ({
@@ -23,6 +24,7 @@ const DayTimeGrid = ({
   onTimeSelect,
   availableTimes,
   selectedIds,
+  events = [], // 새로 추가된 prop
 }) => {
   // 해당 날짜, 시간을 선택한 사용자 필터 함수
   const getAvailableUsers = (date, time) => {
@@ -49,22 +51,39 @@ const DayTimeGrid = ({
     return filteredUsers;
   };
 
+  // 해당 시간대의 이벤트 찾기
+  const getEventForTimeSlot = (time) => {
+    if (!events?.length) return null;
+
+    return events.find(event => {
+      const eventStart = new Date(event.start.dateTime || event.start.date);
+      const eventEnd = new Date(event.end.dateTime || event.end.date);
+      const slotTime = new Date(`${date}T${time}`);
+      
+      return slotTime >= eventStart && slotTime < eventEnd;
+    });
+  };
+
   return (
     <DayColumn>
       <DateHeader>{date}</DateHeader>
       <TimeGridContainer>
-        {timeSlots.map((time) => (
-          <TimeSlot
-            key={`${date}-${time}`}
-            date={date}
-            time={time}
-            isSelected={selectedTimes.some(
-              (slot) => slot.date === date && slot.time === time
-            )}
-            onClick={() => onTimeSelect(date, time)}
-            availableUsers={getAvailableUsers(date, time)}
-          />
-        ))}
+        {timeSlots.map((time) => {
+          const event = getEventForTimeSlot(time);
+          return (
+            <TimeSlot
+              key={`${date}-${time}`}
+              date={date}
+              time={time}
+              isSelected={selectedTimes.some(
+                (slot) => slot.date === date && slot.time === time
+              )}
+              onClick={() => onTimeSelect(date, time)}
+              availableUsers={getAvailableUsers(date, time)}
+              event={event} // TimeSlot 컴포넌트에 이벤트 정보 전달
+            />
+          );
+        })}
       </TimeGridContainer>
     </DayColumn>
   );
