@@ -1,24 +1,28 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import GoogleLogin from "./components/auth/GoogleLogin";
-import CreateMeetingPage from "./components/meeting/create/CreateMeetingPage";
-import MeetingScheduler from "./components/meeting/schedule/MeetingScheduler";
-import OnBoarding from "./components/onBoarding/OnBoarding";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "styled-components";
+import { theme } from "./styles/theme";
+import GoogleLogin from "./components/auth/GoogleLogin";
+import CreateMeetingPage from "./pages/meeting/create/CreateMeetingPage";
+import OnBoardingPage from "./pages/onBoarding/OnBoardingPage";
+import MeetingSchedulerPage from "./pages/meeting/schedule/MeetingSchedulerPage";
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<OnBoarding />} />
-          <Route path="/login" element={<GoogleLogin />} />
-          <Route path="/meeting">
-            <Route path="create" element={<CreateMeetingPage />} />
-            <Route path=":id" element={<MeetingScheduler />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<OnBoardingPage />} />
+            <Route path="/login" element={<GoogleLogin />} />
+            <Route path="/meeting">
+              <Route path="create" element={<CreateMeetingPage />} />
+              <Route path=":id" element={<MeetingSchedulerPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

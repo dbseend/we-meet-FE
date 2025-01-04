@@ -1,21 +1,22 @@
 import { ChevronLeft, ChevronRight, Link } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { getEventsByDates } from "../../../api/calendar/google/GoogleCalendarAPI";
 import {
   getMeeting,
   getMeetingAvailiableTimes,
   submitTimeSelections,
 } from "../../../api/meeting/MeetingAPI";
 import { useAuth } from "../../../context/AuthContext";
-import DayTimeGrid from "./DayTimeGrid";
-import ParticipantList from "./ParticipantList";
+import DayTimeGrid from "../../../components/meeting/schedule/DayTimeGrid";
+import ParticipantList from "../../../components/meeting/schedule/ParticipantList";
 import { generateUUID } from "../../../utils/formatUtils";
 
 /**
  * MeetingScheduler - 메인 컴포넌트
  * 전체 미팅 스케줄러 기능을 관리
  */
-const MeetingScheduler = () => {
+const MeetingSchedulerPage = () => {
   const { user } = useAuth();
   const [submissionData, setSubmissionData] = useState({
     participant_id: user ? user.id : generateUUID(),
@@ -24,6 +25,7 @@ const MeetingScheduler = () => {
     selected_times: [],
   });
 
+  const [events, setEvents] = useState([]);
   const [meetingData, setMeetingData] = useState(null);
   const [availiableTimes, setAvailiableTimes] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -68,8 +70,27 @@ const MeetingScheduler = () => {
       }
     };
 
+    const fetchEvents = async () => {
+      try {
+        const datesToCheck = ["2025-01-06", "2025-01-10", "2025-01-17"];
+
+        const eventsData = await getEventsByDates(datesToCheck);
+        console.log(eventsData);
+        setEvents(eventsData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMeetingData();
     fetchAvailiableTimes();
+    if (user) {
+      fetchEvents();
+    } else {
+      console.log("No user");
+    }
   }, []);
 
   // 시간 슬롯 생성
@@ -107,17 +128,19 @@ const MeetingScheduler = () => {
 
   // 시간 선택 핸들러
   const handleTimeSelect = (date, time, meetingStartTime = "07:00") => {
-    console.log("date: ", date, " time: ", time );
+    console.log("date: ", date, " time: ", time);
     const [hour, minutes] = time.split(":").map(Number);
-    const actualTime = `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-  
+    const actualTime = `${hour.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+
     setSubmissionData((prev) => ({
       ...prev,
       selected_times: prev.selected_times.some(
-        slot => slot.date === date && slot.time === actualTime
+        (slot) => slot.date === date && slot.time === actualTime
       )
         ? prev.selected_times.filter(
-            slot => !(slot.date === date && slot.time === actualTime)
+            (slot) => !(slot.date === date && slot.time === actualTime)
           )
         : [...prev.selected_times, { date, time: actualTime }].sort((a, b) =>
             a.date === b.date
@@ -130,8 +153,8 @@ const MeetingScheduler = () => {
   const handleAvailiableTimeSubmit = async () => {
     console.log(submissionData.selected_times);
     const formattedTimes = submissionData.selected_times.map((slot) => {
-      const [year, month, day] = slot.date.split('-');
-      const [hours, minutes] = slot.time.split(':');
+      const [year, month, day] = slot.date.split("-");
+      const [hours, minutes] = slot.time.split(":");
       return new Date(Date.UTC(year, month - 1, day, hours, minutes))
         .toISOString()
         .replace("Z", "+00");
@@ -146,7 +169,6 @@ const MeetingScheduler = () => {
       alert("시간을 선택해주세요");
       return;
     }
-
 
     setSubmissionData((prev) => ({
       ...prev,
@@ -439,4 +461,4 @@ const SubmitButton = styled.button`
   }
 `;
 
-export default MeetingScheduler;
+export default MeetingSchedulerPage;

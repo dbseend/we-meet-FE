@@ -49,9 +49,6 @@ const ParticipantList = ({ availableTimes, selectedIds, setSelectedIds }) => {
           >
             <ParticipantInfo>
               <Name>{participant.user_name}</Name>
-              <SelectionCount>
-                선택: {participant.selected_times.length}개 시간
-              </SelectionCount>
             </ParticipantInfo>
           </ListItem>
         ))}
