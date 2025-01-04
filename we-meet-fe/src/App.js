@@ -6,22 +6,25 @@ import GoogleLogin from "./components/auth/GoogleLogin";
 import CreateMeetingPage from "./pages/meeting/create/CreateMeetingPage";
 import OnBoardingPage from "./pages/onBoarding/OnBoardingPage";
 import MeetingSchedulerPage from "./pages/meeting/schedule/MeetingSchedulerPage";
+import { GoogleCalendarProvider } from "./context/GoogleCalendarContext";
 
 function App() {
   return (
     <AuthProvider>
-      <ThemeProvider theme={theme}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<OnBoardingPage />} />
-            <Route path="/login" element={<GoogleLogin />} />
-            <Route path="/meeting">
-              <Route path="create" element={<CreateMeetingPage />} />
-              <Route path=":id" element={<MeetingSchedulerPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
+      <GoogleCalendarProvider>
+        <ThemeProvider theme={theme}>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<OnBoardingPage />} />
+              <Route path="/login" element={<GoogleLogin />} />
+              <Route path="/meeting">
+                <Route path="create" element={<CreateMeetingPage />} />
+                <Route path=":id" element={<MeetingSchedulerPage />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ThemeProvider>
+      </GoogleCalendarProvider>
     </AuthProvider>
   );
 }

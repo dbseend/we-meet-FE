@@ -1,15 +1,16 @@
 import { ChevronLeft, ChevronRight, Link } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getEventsByDates } from "../../../api/calendar/google/GoogleCalendarAPI";
+import { useGoogleCalendar } from "../../../context/GoogleCalendarContext";
+import { getAllCalendarEvents } from "../../../api/calendar/google/GoogleCalendarAPI";
 import {
   getMeeting,
   getMeetingAvailiableTimes,
   submitTimeSelections,
 } from "../../../api/meeting/MeetingAPI";
-import { useAuth } from "../../../context/AuthContext";
 import DayTimeGrid from "../../../components/meeting/schedule/DayTimeGrid";
 import ParticipantList from "../../../components/meeting/schedule/ParticipantList";
+import { useAuth } from "../../../context/AuthContext";
 import { generateUUID } from "../../../utils/formatUtils";
 
 /**
@@ -18,6 +19,7 @@ import { generateUUID } from "../../../utils/formatUtils";
  */
 const MeetingSchedulerPage = () => {
   const { user } = useAuth();
+  const { isInitialized, initializeCalendar } = useGoogleCalendar();
   const [submissionData, setSubmissionData] = useState({
     participant_id: user ? user.id : generateUUID(),
     meeting_id: window.location.pathname.split("/").pop(),
@@ -43,6 +45,9 @@ const MeetingSchedulerPage = () => {
 
         if (meetingError) throw meetingError;
         setMeetingData(data);
+        if (user && data.dates) {
+          fetchEvents(data.dates);
+        }
       } catch (err) {
         setError(err.message);
         console.error("Failed to fetch meeting data:", err);
@@ -70,23 +75,31 @@ const MeetingSchedulerPage = () => {
       }
     };
 
-    const fetchEvents = async () => {
+    // Google Calendar 이벤트 불러오기
+    const fetchEvents = async (dates) => {
       try {
-        const datesToCheck = ["2025-01-06", "2025-01-10", "2025-01-17"];
+        if (user && dates) {
+          // Calendar API 초기화 확인
+          const initialized = await initializeCalendar();
+          if (!initialized) {
+            throw new Error("Failed to initialize Google Calendar");
+          }
 
-        const eventsData = await getEventsByDates(datesToCheck);
-        console.log(eventsData);
-        setEvents(eventsData);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+          // 이벤트 조회
+          const eventsByDate = await getAllCalendarEvents(dates);
+          console.log("eventsByDate: ", eventsByDate);
+          setEvents(eventsByDate);
+        }
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+        setError(error.message);
       }
     };
 
     fetchMeetingData();
     fetchAvailiableTimes();
     if (user) {
+      console.log("user:", user);
       fetchEvents();
     } else {
       console.log("No user");

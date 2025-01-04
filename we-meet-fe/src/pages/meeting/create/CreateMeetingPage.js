@@ -46,6 +46,7 @@ const CreateMeetingPage = () => {
 
   // 미팅 생성 폼 제출 핸들러
   const handleCreateMeetingSubmit = async (e) => {
+    console.log("meetingData.dates:", meetingData.dates);
     e.preventDefault();
     if (!meetingData.title || meetingData.dates.length === 0) {
       return;
@@ -71,6 +72,7 @@ const CreateMeetingPage = () => {
 
   // 마우스 이벤트 핸들러 - 날짜 선택
   const handleMouseDown = (date) => {
+    console.log(date);
     if (date < new Date(new Date().setHours(0, 0, 0, 0))) return;
     setIsDragging(true);
     toggleDateSelection(date);

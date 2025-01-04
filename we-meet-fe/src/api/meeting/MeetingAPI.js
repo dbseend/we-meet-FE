@@ -3,10 +3,15 @@ import { supabase } from "../../lib/supabaseClient";
 
 // 미팅 생성 API
 export const createMeeting = async (meetingData) => {
+  console.log("dates:", meetingData.dates);
   try {
-    const formattedDates = meetingData.dates.map(
-      (date) => new Date(date).toISOString().split("T")[0]
-    );
+    const formattedDates = meetingData.dates.map((date) => {
+      // 날짜 객체 생성 시 시간을 정오(12:00)로 설정하여 시차 문제 방지
+      const d = new Date(date);
+      d.setHours(12, 0, 0, 0);
+      return d.toISOString().split("T")[0];
+    });
+    console.log(formattedDates);
 
     const { data, error } = await supabase
       .from("meetings")
