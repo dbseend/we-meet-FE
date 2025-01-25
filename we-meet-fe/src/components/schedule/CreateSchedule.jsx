@@ -1,24 +1,57 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Calendar from "./Calendar";
+import {useApp} from "../../context/AppContext";
 
 const CreateMeetingForm = () => {
   const [meetingData, setMeetingData] = useState({
-    title: "",
-    description: "",
+    // creator_id: user ? user.id : generateUUID(),
+    title: "", //varchar
+    description: "", //varchar
     dates: [],
     availableFrom: "09:00",
     availableTo: "18:00",
     isRemote: true,
-    deadline: "17:00",
+    deadline: "24:00",
     attendeeCount: 4,
   });
 
   const handleSubmit = (e) => {
-    e.preventDefault();
     console.log("meeting data", meetingData);
-    // Submit logic
+    e.preventDefault();
+    
+    const {isValid, errors} = validateMeetingData();
+
+    if(!isValid){
+      alert(errors);
+      return;
+    }
   };
+
+  const validateMeetingData = () => {
+    const errors = {};
+   
+    if (!meetingData.title.trim()) {
+      errors.title = '회의 제목을 입력해주세요';
+    }
+   
+    if (meetingData.dates.length === 0) {
+      errors.dates = '회의 날짜를 선택해주세요'; 
+    }
+   
+    if (meetingData.availableFrom >= meetingData.availableTo) {
+      errors.time = '종료 시간은 시작 시간보다 늦어야 합니다';
+    }
+   
+    if (meetingData.attendeeCount < 2) {
+      errors.attendeeCount = '참여 인원은 2명 이상이어야 합니다';
+    }
+   
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+   };
 
   return (
     <FormContainer onSubmit={handleSubmit}>
@@ -52,7 +85,7 @@ const CreateMeetingForm = () => {
       <Calendar meetingData={meetingData} setMeetingData={setMeetingData}/>
 
       <FormGroup>
-        <Label>회의 시간</Label>
+        <Label>회의 예정 시간</Label>
         <TimeGroup>
           <TimeInput
             type="time"

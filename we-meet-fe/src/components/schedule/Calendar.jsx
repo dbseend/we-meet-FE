@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Calendar = ({ meetingData, setMeetingData }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDates, setSelectedDates] = useState(meetingData.dates);
 
   const handleDateClick = (date) => {
     const dateString = date.toISOString();
@@ -151,7 +150,7 @@ const Title = styled.h2`
   color: #1a1a1a;
 `;
 
-const Button = styled.button`
+const Button = styled.button.attrs({ type: 'button' })`
   padding: 0.5rem;
   border: none;
   background: none;
@@ -184,7 +183,7 @@ const DaysGrid = styled.div`
   gap: 1px;
 `;
 
-const Day = styled.button`
+const Day = styled.button.attrs({type:'button'})`
   position: relative;
   width: 100%;
   aspect-ratio: 1;
