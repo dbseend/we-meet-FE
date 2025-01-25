@@ -1,5 +1,6 @@
-const Footer_Mobile = () => {
+import styled from "styled-components";
 
+const Footer_Mobile = () => {
   const socialLinks = [
     { name: "Twitter", url: "#" },
     { name: "LinkedIn", url: "#" },
@@ -9,23 +10,48 @@ const Footer_Mobile = () => {
   const copyright = "2025 스케줄러. All rights reserved.";
 
   return (
-    <div className="flex md:hidden flex-col items-center">
-      <div className="mb-4">
-        <p className="text-gray-600">{copyright}</p>
-      </div>
-      <div className="flex space-x-6">
+    <MobileContainer>
+      <CopyrightWrapper>
+        <Copyright>{copyright}</Copyright>
+      </CopyrightWrapper>
+      {/* <SocialContainer>
         {socialLinks.map(({ name, url }) => (
-          <a
-            key={name}
-            href={url}
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <SocialLink key={name} href={url}>
             {name}
-          </a>
+          </SocialLink>
         ))}
-      </div>
-    </div>
+      </SocialContainer> */}
+    </MobileContainer>
   );
 };
+
+const MobileContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const CopyrightWrapper = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const Copyright = styled.p`
+  color: #4b5563;
+`;
+
+const SocialContainer = styled.div`
+  display: flex;
+  gap: 1.5rem;
+`;
+
+const SocialLink = styled.a`
+  color: #4b5563;
+  &:hover {
+    color: #111827;
+  }
+`;
 
 export default Footer_Mobile;

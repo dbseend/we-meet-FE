@@ -1,3 +1,5 @@
+import styled from "styled-components";
+
 const Footer_Desektop = () => {
   const socialLinks = [
     { name: "Twitter", url: "#" },
@@ -8,23 +10,45 @@ const Footer_Desektop = () => {
   const copyright = "2025 스케줄러. All rights reserved.";
 
   return (
-    <div className="hidden md:flex md:flex-row justify-between items-center">
+    <Container>
       <div>
-        <p className="text-gray-600">{copyright}</p>
+        <Copyright>{copyright}</Copyright>
       </div>
-      <div className="flex space-x-6">
+      {/* <SocialContainer>
         {socialLinks.map(({ name, url }) => (
-          <a
-            key={name}
-            href={url}
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <SocialLink key={name} href={url}>
             {name}
-          </a>
+          </SocialLink>
         ))}
-      </div>
-    </div>
+      </SocialContainer> */}
+    </Container>
   );
 };
+
+const Container = styled.div`
+  display: none;
+  @media (min-width: 768px) {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
+const Copyright = styled.p`
+  color: #4b5563;
+`;
+
+const SocialContainer = styled.div`
+  display: flex;
+  gap: 1.5rem;
+`;
+
+const SocialLink = styled.a`
+  color: #4b5563;
+  &:hover {
+    color: #111827;
+  }
+`;
 
 export default Footer_Desektop;

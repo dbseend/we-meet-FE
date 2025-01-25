@@ -1,69 +1,82 @@
-import React, { useState } from 'react';
-import { Menu, X, Bell, Calendar, User, Settings } from 'lucide-react';
+import { Bell, Calendar, Settings, User } from "lucide-react";
+import React, { useState } from "react";
+import styled from "styled-components";
 
 const Header_Desktop = () => {
-  const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
-    { title: '일정 생성', icon: Calendar },
-    { title: '마이페이지', icon: User },
-    { title: '알림센터', icon: Bell },
-    { title: '설정', icon: Settings }
+    { title: "일정 생성", icon: Calendar, url: "/create" },
+    { title: "마이페이지", icon: User, url: "/myPage" },
+    { title: "알림센터", icon: Bell, url: "/" },
+    { title: "설정", icon: Settings, url:"/settings" },
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-      <nav className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold">스케줄러</h1>
-          </div>
+    <HeaderContainer>
+      <Nav>
+        <Logo>
+          <Title>스케줄러</Title>
+        </Logo>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
-            {navLinks.map(({ title, icon: Icon }) => (
-              <a
-                key={title}
-                href="#"
-                className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
-              >
-                <Icon className="w-5 h-5" />
-                <span>{title}</span>
-              </a>
-            ))}
-          </div>
-
-          {/* Mobile Navigation Button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {navLinks.map(({ title, icon: Icon }) => (
-                <a
-                  key={title}
-                  href="#"
-                  className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100"
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{title}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </nav>
-    </header>
+        <DesktopNav>
+          {navLinks.map(({ title, icon: Icon, url }) => (
+              <NavLink key={title} href={url}>
+              <StyledIcon as={Icon} />
+              <span>{title}</span>
+            </NavLink>
+          ))}
+        </DesktopNav>
+      </Nav>
+    </HeaderContainer>
   );
 };
+
+const HeaderContainer = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  z-index: 50;
+`;
+
+const Nav = styled.nav`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+`;
+
+const Logo = styled.div`
+  flex-shrink: 0;
+`;
+
+const Title = styled.h1`
+  font-size: 1.25rem;
+  font-weight: 700;
+`;
+
+const DesktopNav = styled.div`
+  display: none;
+  @media (min-width: 768px) {
+    display: flex;
+    gap: 2rem;
+  }
+`;
+
+const NavLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #4b5563;
+  &:hover {
+    color: #111827;
+  }
+`;
+
+const StyledIcon = styled.div`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 export default Header_Desktop;
