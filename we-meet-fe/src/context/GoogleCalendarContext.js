@@ -1,7 +1,7 @@
 // GoogleCalendarContext.js
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { initializeGoogleCalendar } from "../api/calendar/google/GoogleCalendarAPI";
+import { initializeGoogleCalendar } from "../api/GoogleCalendarAPI";
 
 const GoogleCalendarContext = createContext();
 
