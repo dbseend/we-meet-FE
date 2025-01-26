@@ -1,8 +1,8 @@
 import { useResponsiveState } from "../../hooks/useResponsiveState";
-import Header_Desktop from "./Header_Desktop";
-import Header_Mobile from "./Header_Mobile";
-import Footer_Desektop from "./Footer_Desktop";
-import Footer_Mobile from "./Footer_Mobile";
+import Header_Desktop from "./desktop/Header_Desktop";
+import Header_Mobile from "./mobile/Header_Mobile";
+import Footer_Desektop from "./desktop/Footer_Desktop";
+import Footer_Mobile from "./mobile/Footer_Mobile";
 
 const Layout = ({ children }) => {
   const { isMobile } = useResponsiveState();

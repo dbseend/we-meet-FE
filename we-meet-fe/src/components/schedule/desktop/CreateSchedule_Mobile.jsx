@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {useNavigate} from "react-router-dom";
 import styled from "styled-components";
-import Calendar from "./Calendar";
+import Calendar from "./Calendar_Mobile";
 import { useAuth } from "../../context/AuthContext";
 import { formatTime } from "../../utils/dateTimeFormat";
 import { generateUUID } from "../../utils/util";
