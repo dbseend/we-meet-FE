@@ -7,7 +7,7 @@ import { formatTime } from "../../utils/dateTimeFormat";
 import { generateUUID } from "../../utils/util";
 import { createMeeting } from "../../api/schedule/ScheduleAPI";
 
-const CreateMeetingForm = () => {
+const CreateScheduleForm_Mobile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -278,4 +278,4 @@ const Button = styled.button`
   }
 `;
 
-export default CreateMeetingForm;
+export default CreateScheduleForm_Mobile;
