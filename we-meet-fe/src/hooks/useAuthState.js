@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../api/supabaseClient";
+import { supabase } from "../api/supabase/supabaseClient";
 
 export const useAuthState = () => {
   const [session, setSession] = useState(null);

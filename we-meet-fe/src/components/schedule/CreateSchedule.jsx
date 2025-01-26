@@ -1,28 +1,33 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Calendar from "./Calendar";
-import {useApp} from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
+import { formatTime } from "../../utils/dateTimeFormat";
 
 const CreateMeetingForm = () => {
+  const { user } = useAuth();
+
   const [meetingData, setMeetingData] = useState({
-    // creator_id: user ? user.id : generateUUID(),
-    title: "", //varchar
-    description: "", //varchar
+    creator_id: user ? user.id : null,
+    anonymous_creator_id: user ? null : "generateUUID",
+    title: "",
+    description: "",
     dates: [],
-    availableFrom: "09:00",
-    availableTo: "18:00",
-    isRemote: true,
-    deadline: "24:00",
-    attendeeCount: 4,
+    time_ragne_from: "09:00:00",
+    time_ragne_to: "18:00:00",
+    is_online: false,
+    deadline: "18:00:00",
+    max_participants: 4,
+    online_meeting_url: "",
   });
 
   const handleSubmit = (e) => {
     console.log("meeting data", meetingData);
     e.preventDefault();
-    
-    const {isValid, errors} = validateMeetingData();
 
-    if(!isValid){
+    const { isValid, errors } = validateMeetingData();
+
+    if (!isValid) {
       alert(errors);
       return;
     }
@@ -30,28 +35,28 @@ const CreateMeetingForm = () => {
 
   const validateMeetingData = () => {
     const errors = {};
-   
+
     if (!meetingData.title.trim()) {
-      errors.title = '회의 제목을 입력해주세요';
+      errors.title = "회의 제목을 입력해주세요";
     }
-   
+
     if (meetingData.dates.length === 0) {
-      errors.dates = '회의 날짜를 선택해주세요'; 
+      errors.dates = "회의 날짜를 선택해주세요";
     }
-   
+
     if (meetingData.availableFrom >= meetingData.availableTo) {
-      errors.time = '종료 시간은 시작 시간보다 늦어야 합니다';
+      errors.time = "종료 시간은 시작 시간보다 늦어야 합니다";
     }
-   
+
     if (meetingData.attendeeCount < 2) {
-      errors.attendeeCount = '참여 인원은 2명 이상이어야 합니다';
+      errors.attendeeCount = "참여 인원은 2명 이상이어야 합니다";
     }
-   
+
     return {
       isValid: Object.keys(errors).length === 0,
-      errors
+      errors,
     };
-   };
+  };
 
   return (
     <FormContainer onSubmit={handleSubmit}>
@@ -82,24 +87,30 @@ const CreateMeetingForm = () => {
         />
       </FormGroup>
 
-      <Calendar meetingData={meetingData} setMeetingData={setMeetingData}/>
+      <Calendar meetingData={meetingData} setMeetingData={setMeetingData} />
 
       <FormGroup>
         <Label>회의 예정 시간</Label>
         <TimeGroup>
           <TimeInput
             type="time"
-            value={meetingData.availableFrom}
+            value={meetingData.time_ragne_from}
             onChange={(e) =>
-              setMeetingData({ ...meetingData, availableFrom: e.target.value })
+              setMeetingData({
+                ...meetingData,
+                time_ragne_from: formatTime(e.target.value),
+              })
             }
           />
           <TimeLabel>부터</TimeLabel>
           <TimeInput
             type="time"
-            value={meetingData.availableTo}
+            value={meetingData.time_ragne_to}
             onChange={(e) =>
-              setMeetingData({ ...meetingData, availableTo: e.target.value })
+              setMeetingData({
+                ...meetingData,
+                time_ragne_to: formatTime(e.target.value),
+              })
             }
           />
           <TimeLabel>까지</TimeLabel>
@@ -112,7 +123,10 @@ const CreateMeetingForm = () => {
           type="time"
           value={meetingData.deadline}
           onChange={(e) =>
-            setMeetingData({ ...meetingData, deadline: e.target.value })
+            setMeetingData({
+              ...meetingData,
+              deadline: formatTime(e.target.value),
+            })
           }
         />
       </FormGroup>
@@ -122,11 +136,11 @@ const CreateMeetingForm = () => {
         <Input
           type="number"
           placeholder="참여 인원을 입력하세요"
-          value={meetingData.attendeeCount}
+          value={meetingData.max_participants}
           onChange={(e) =>
             setMeetingData({
               ...meetingData,
-              attendeeCount: parseInt(e.target.value),
+              max_participants: parseInt(e.target.value),
             })
           }
         />
@@ -136,9 +150,9 @@ const CreateMeetingForm = () => {
         <span>원격 회의</span>
         <Checkbox
           type="checkbox"
-          checked={meetingData.isRemote}
+          checked={meetingData.is_online}
           onChange={(e) =>
-            setMeetingData({ ...meetingData, isRemote: e.target.checked })
+            setMeetingData({ ...meetingData, is_online: e.target.checked })
           }
         />
       </CheckboxLabel>
@@ -149,12 +163,7 @@ const CreateMeetingForm = () => {
 };
 
 const FormContainer = styled.form`
-  // max-width: 600px;
-  // margin: 2rem auto;
   padding: 0 0.5rem 0.5rem 0.5rem;
-  // background: white;
-  // border-radius: 20px;
-  // box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const FormHeader = styled.div`

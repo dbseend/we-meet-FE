@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { supabase } from "../api/supabaseClient";
+import { supabase } from "../api/supabase/supabaseClient";
 import { initializeGoogleCalendar } from "../api/GoogleCalendarAPI";
 
 export const useGoogleCalendarState = () => {

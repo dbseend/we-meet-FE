@@ -1,14 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AppProvider } from "./context/AppContext";
-import { GlobalStyle } from "./styles/GlobalStyle";
-import HomePage from "./pages/Home/index";
-import CreateSchedulePage from "./pages/schedule/CreateSchedulePage";
 import Layout from "./components/layout/Layout";
+import { AuthProvider } from "./context/AuthContext";
+import HomePage from "./pages/home/index";
+import CreateSchedulePage from "./pages/schedule/CreateSchedulePage";
 
 function App() {
   return (
-    <AppProvider>
-      {/* <GlobalStyle> */}
+    <AuthProvider>
       <Layout>
         <BrowserRouter>
           <Routes>
@@ -17,8 +15,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </Layout>
-      {/* </GlobalStyle> */}
-    </AppProvider>
+    </AuthProvider>
   );
 }
 

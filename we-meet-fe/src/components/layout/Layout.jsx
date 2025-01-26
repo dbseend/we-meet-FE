@@ -1,11 +1,11 @@
-import { useApp } from "../../context/AppContext";
+import { useResponsiveState } from "../../hooks/useResponsiveState";
 import Header_Desktop from "./Header_Desktop";
 import Header_Mobile from "./Header_Mobile";
 import Footer_Desektop from "./Footer_Desktop";
 import Footer_Mobile from "./Footer_Mobile";
 
 const Layout = ({ children }) => {
-  const { isMobile } = useApp();
+  const { isMobile } = useResponsiveState();
 
   return (
     <div className="min-h-screen flex flex-col">
