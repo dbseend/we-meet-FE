@@ -7,14 +7,14 @@ import CreateSchedulePage from "./pages/schedule/CreateSchedulePage";
 function App() {
   return (
     <AuthProvider>
-      <Layout>
         <BrowserRouter>
+      <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/create" element={<CreateSchedulePage />} />
           </Routes>
-        </BrowserRouter>
       </Layout>
+        </BrowserRouter>
     </AuthProvider>
   );
 }

@@ -1,35 +1,48 @@
 import React, { useState } from "react";
+import {useNavigate} from "react-router-dom";
 import styled from "styled-components";
 import Calendar from "./Calendar";
 import { useAuth } from "../../context/AuthContext";
 import { formatTime } from "../../utils/dateTimeFormat";
+import { generateUUID } from "../../utils/util";
+import { createMeeting } from "../../api/schedule/ScheduleAPI";
 
 const CreateMeetingForm = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [meetingData, setMeetingData] = useState({
     creator_id: user ? user.id : null,
-    anonymous_creator_id: user ? null : "generateUUID",
+    anonymous_creator_id: user ? null : generateUUID(),
     title: "",
     description: "",
     dates: [],
-    time_ragne_from: "09:00:00",
-    time_ragne_to: "18:00:00",
+    time_range_from: "09:00:00",
+    time_range_to: "18:00:00",
     is_online: false,
     deadline: "18:00:00",
     max_participants: 4,
     online_meeting_url: "",
   });
 
-  const handleSubmit = (e) => {
-    console.log("meeting data", meetingData);
+  const handleSubmit = async (e) => {
+    console.log("before submit meeting data", meetingData);
     e.preventDefault();
 
     const { isValid, errors } = validateMeetingData();
-
     if (!isValid) {
-      alert(errors);
+      alert("필수 항목 모두 채워주세요");
       return;
+    }
+
+    const result = await createMeeting(meetingData);
+    if (result.success) {
+      console.log("미팅 생성 성공:", result.data);
+      alert("미팅 생성 성공");
+      navigate(`/meeting/${result.data[0].meeting_id}`);
+    } else {
+      console.error("미팅 생성 실패:", result.error);
+      alert("미팅 생성 실패");
     }
   };
 
@@ -94,22 +107,22 @@ const CreateMeetingForm = () => {
         <TimeGroup>
           <TimeInput
             type="time"
-            value={meetingData.time_ragne_from}
+            value={meetingData.time_range_from}
             onChange={(e) =>
               setMeetingData({
                 ...meetingData,
-                time_ragne_from: formatTime(e.target.value),
+                time_range_from: formatTime(e.target.value),
               })
             }
           />
           <TimeLabel>부터</TimeLabel>
           <TimeInput
             type="time"
-            value={meetingData.time_ragne_to}
+            value={meetingData.time_range_to}
             onChange={(e) =>
               setMeetingData({
                 ...meetingData,
-                time_ragne_to: formatTime(e.target.value),
+                time_range_to: formatTime(e.target.value),
               })
             }
           />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Menu, X, Bell, Calendar, User, Settings } from "lucide-react";
 
@@ -9,16 +10,18 @@ const Header_Mobile = () => {
     { title: "일정 생성", icon: Calendar, url: "/create" },
     { title: "마이페이지", icon: User, url: "/myPage" },
     { title: "알림센터", icon: Bell, url: "/" },
-    { title: "설정", icon: Settings, url:"/settings" },
+    { title: "설정", icon: Settings, url: "/settings" },
   ];
 
   return (
     <HeaderContainer>
       <Nav>
         <TopBar>
-          <Logo>
-            <Title>스케줄러</Title>
-          </Logo>
+          <Link to="/">
+            <Logo>
+              <Title>스케줄러</Title>
+            </Logo>
+          </Link>
           <MobileButton onClick={() => setIsOpen(!isOpen)}>
             <IconWrapper as={isOpen ? X : Menu} />
           </MobileButton>
@@ -27,7 +30,7 @@ const Header_Mobile = () => {
         <MobileMenu $isOpen={isOpen}>
           <MenuContent>
             {navLinks.map(({ title, icon: Icon, url }) => (
-              <NavLink key={title} href={url}>
+              <NavLink key={title} to={url} onClick={() => setIsOpen(!isOpen)}>
                 <StyledIcon as={Icon} />
                 <span>{title}</span>
               </NavLink>
@@ -99,7 +102,7 @@ const MenuContent = styled.div`
   padding-bottom: 0.75rem;
 `;
 
-const NavLink = styled.a`
+const NavLink = styled(Link)`
   display: flex;
   align-items: center;
   gap: 0.5rem;

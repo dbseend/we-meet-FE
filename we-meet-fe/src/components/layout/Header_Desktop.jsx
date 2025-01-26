@@ -1,5 +1,6 @@
 import { Bell, Calendar, Settings, User } from "lucide-react";
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 const Header_Desktop = () => {
@@ -14,16 +15,18 @@ const Header_Desktop = () => {
   return (
     <HeaderContainer>
       <Nav>
+        <Link to="/">
         <Logo>
           <Title>스케줄러</Title>
         </Logo>
+        </Link>
 
         <DesktopNav>
           {navLinks.map(({ title, icon: Icon, url }) => (
-              <NavLink key={title} href={url}>
+              <Link key={title} to={url}>
               <StyledIcon as={Icon} />
               <span>{title}</span>
-            </NavLink>
+            </Link>
           ))}
         </DesktopNav>
       </Nav>
@@ -72,6 +75,11 @@ const NavLink = styled.a`
   &:hover {
     color: #111827;
   }
+`;
+
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
 `;
 
 const StyledIcon = styled.div`
