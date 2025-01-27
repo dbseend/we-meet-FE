@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { Text } from "../../../styles/Typography.styles";
 
 /**
  * TimeSlot 컴포넌트 - 개별 시간 슬롯을 표시

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import TimeSlot from "./TimSlot";
-import { parseISOString } from "../../../../../../src/utils/dateUtils";
+import { parseISOString } from "../../../../utils/dateTimeFormat";
 
 /**
  * DayTimeGrid 컴포넌트 - 하루의 전체 시간표를 표시

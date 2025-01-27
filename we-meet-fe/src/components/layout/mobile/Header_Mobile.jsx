@@ -7,7 +7,7 @@ const Header_Mobile = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
-    { title: "일정 생성", icon: Calendar, url: "/create" },
+    { title: "일정 생성", icon: Calendar, url: "/meeting/create" },
     { title: "마이페이지", icon: User, url: "/myPage" },
     { title: "알림센터", icon: Bell, url: "/" },
     { title: "설정", icon: Settings, url: "/settings" },

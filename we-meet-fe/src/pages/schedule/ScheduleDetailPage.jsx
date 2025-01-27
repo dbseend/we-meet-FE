@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { getMeeting } from "../../api/schedule/ScheduleAPI";
-import { copyToClipboard } from "../../utils/util";
-import styled from "styled-components";
 import { ChevronLeft, ChevronRight, Link } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import styled from "styled-components";
+import { getMeeting } from "../../api/schedule/ScheduleAPI";
+import TimeTable from "../../components/schedule/detail/mobile/TimeTable";
+import DateNavigation from "../../components/schedule/detail/mobile/DateNavigation";
+import { useAuth } from "../../context/AuthContext";
+import { copyToClipboard, generateUUID } from "../../utils/util";
 
 const ScheduleDetailPage = () => {
   const { user } = useAuth();
@@ -15,8 +17,18 @@ const ScheduleDetailPage = () => {
   const [meetingData, setMeetingData] = useState(
     location.state?.meetingData || null
   );
+  const [submissionData, setSubmissionData] = useState({
+    participant_id: user ? user.id : generateUUID(),
+    meeting_id: window.location.pathname.split("/").pop(),
+    user_name: user ? user.user_metadata.name : "",
+    selected_times: [],
+  });
+  const [availiableTimes, setAvailiableTimes] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [events, setEvents] = useState([]);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const MAX_DAYS_SHOWN = 3;
+
   // 미팅 데이터 가져오기
   useEffect(() => {
     const fetchMeetingData = async () => {
@@ -40,32 +52,6 @@ const ScheduleDetailPage = () => {
     }
   }, [id]);
 
-  // 날짜 이동 핸들러
-  const handleDateNavigation = (direction) => {
-    setCurrentDateIndex((prev) => {
-      const maxIndex = Math.ceil(meetingData.dates.length / MAX_DAYS_SHOWN) - 1;
-      if (direction === "next") {
-        return Math.min(prev + 1, maxIndex);
-      }
-      return Math.max(prev - 1, 0);
-    });
-  };
-
-  // 현재 페이지에 표시될 날짜들을 계산하는 함수
-  const getVisibleDates = () => {
-    if (!meetingData?.dates) return [];
-    const start = currentDateIndex * MAX_DAYS_SHOWN;
-    return meetingData.dates.slice(
-      start,
-      Math.min(start + MAX_DAYS_SHOWN, meetingData.dates.length)
-    );
-  };
-
-  const visibleDates = getVisibleDates();
-  const canNavigatePrev = currentDateIndex > 0;
-  const canNavigateNext =
-    (currentDateIndex + 1) * MAX_DAYS_SHOWN < meetingData.dates.length;
-
   if (isLoading) return <div>로딩 중...</div>;
 
   return (
@@ -81,23 +67,23 @@ const ScheduleDetailPage = () => {
       </Header>
 
       {/* 날짜 네비게이션 */}
-      <DateNavigation>
-        <NavButton
-          onClick={() => handleDateNavigation("prev")}
-          disabled={!canNavigatePrev}
-        >
-          <ChevronLeft size={24} />
-        </NavButton>
-        <DateDisplay>
-          {visibleDates[0]} ~ {visibleDates[visibleDates.length - 1]}
-        </DateDisplay>
-        <NavButton
-          onClick={() => handleDateNavigation("next")}
-          disabled={!canNavigateNext}
-        >
-          <ChevronRight size={24} />
-        </NavButton>
-      </DateNavigation>
+      <DateNavigation
+        dates={meetingData.dates}
+        currentDateIndex={currentDateIndex}
+        setCurrentDateIndex={setCurrentDateIndex}
+      />
+
+      {/* 시간표 */}
+      <TimeTable
+        time_range_from={meetingData.time_range_from}
+        time_range_to={meetingData.time_range_to}
+        dates={meetingData.dates}
+        submissionData={submissionData}
+        setSubmissionData={setSubmissionData}
+        events={events}
+        availiableTimes={availiableTimes}
+        selectedIds={selectedIds}
+      />
     </Container>
   );
 };
@@ -143,36 +129,4 @@ const CopyButton = styled.button`
   }
 `;
 
-const NavButton = styled.button`
-  padding: 0.5rem;
-  border: none;
-  background: none;
-  color: ${(props) => (props.disabled ? "#ccc" : "#333")};
-  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px; // 최소 터치 영역 확보
-
-  &:active {
-    transform: ${(props) => (props.disabled ? "none" : "scale(0.95)")};
-  }
-`;
-
-const DateNavigation = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const DateDisplay = styled.div`
-  font-size: 0.875rem;
-  font-weight: 500;
-  flex: 1;
-  text-align: center;
-  min-width: 0;
-  padding: 0 0.5rem;
-`;
 export default ScheduleDetailPage;
