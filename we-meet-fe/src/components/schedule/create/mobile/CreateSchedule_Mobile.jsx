@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Calendar_Mobile from "./Calendar_Mobile";
-import { useAuth } from "../../../context/AuthContext";
-import { formatTime } from "../../../utils/dateTimeFormat";
-import { generateUUID } from "../../../utils/util";
-import { createMeeting } from "../../../api/schedule/ScheduleAPI";
+import { useAuth } from "../../../../context/AuthContext";
+import { formatTime } from "../../../../utils/dateTimeFormat";
+import { generateUUID } from "../../../../utils/util";
+import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
 
 const CreateSchedule_Mobile = () => {
   const { user } = useAuth();
@@ -26,7 +26,6 @@ const CreateSchedule_Mobile = () => {
   });
 
   const handleSubmit = async (e) => {
-    console.log("before submit meeting data", meetingData);
     e.preventDefault();
 
     const { isValid, errors } = validateMeetingData();
@@ -35,13 +34,22 @@ const CreateSchedule_Mobile = () => {
       return;
     }
 
-    const result = await createMeeting(meetingData);
-    if (result.success) {
-      console.log("미팅 생성 성공:", result.data);
-      alert("미팅 생성 성공");
-      navigate(`/meeting/${result.data[0].meeting_id}`);
-    } else {
-      console.error("미팅 생성 실패:", result.error);
+    try {
+      const result = await createMeeting(meetingData);
+      if (result.success) {
+        const meetingId = result.data[0].meeting_id;
+        console.log("미팅 생성 성공:", result.data);
+        alert("미팅 생성 성공");
+
+        // URL Parameter와 state 함께 전달
+        navigate(`/meeting/${meetingId}`, {
+          state: {
+            meetingData: result.data[0],
+          },
+        });
+      }
+    } catch (error) {
+      console.error("미팅 생성 실패:", error);
       alert("미팅 생성 실패");
     }
   };
@@ -100,7 +108,10 @@ const CreateSchedule_Mobile = () => {
         />
       </FormGroup>
 
-      <Calendar_Mobile meetingData={meetingData} setMeetingData={setMeetingData} />
+      <Calendar_Mobile
+        meetingData={meetingData}
+        setMeetingData={setMeetingData}
+      />
 
       <FormGroup>
         <Label>회의 예정 시간</Label>
