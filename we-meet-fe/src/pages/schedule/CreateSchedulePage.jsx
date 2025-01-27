@@ -1,4 +1,4 @@
-import CreateScheduleForm_Mobile from "../../components/schedule/mobile/Calendar_Mobile";
+import CreateScheduleForm_Mobile from "../../components/schedule/mobile/CreateSchedule_Mobile";
 
 const CreateSchedulePage = () => {
   return (

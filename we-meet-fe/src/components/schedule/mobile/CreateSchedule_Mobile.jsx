@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import Calendar from "../desktop/Calendar_Mobile";
-import { useAuth } from "../../context/AuthContext";
-import { formatTime } from "../../utils/dateTimeFormat";
-import { generateUUID } from "../../utils/util";
-import { createMeeting } from "../../api/schedule/ScheduleAPI";
+import Calendar_Mobile from "./Calendar_Mobile";
+import { useAuth } from "../../../context/AuthContext";
+import { formatTime } from "../../../utils/dateTimeFormat";
+import { generateUUID } from "../../../utils/util";
+import { createMeeting } from "../../../api/schedule/ScheduleAPI";
 
 const CreateSchedule_Mobile = () => {
   const { user } = useAuth();
@@ -100,7 +100,7 @@ const CreateSchedule_Mobile = () => {
         />
       </FormGroup>
 
-      <Calendar meetingData={meetingData} setMeetingData={setMeetingData} />
+      <Calendar_Mobile meetingData={meetingData} setMeetingData={setMeetingData} />
 
       <FormGroup>
         <Label>회의 예정 시간</Label>

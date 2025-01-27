@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import styled from "styled-components";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const Calendar = ({ meetingData, setMeetingData }) => {
+const Calendar_Mobile = ({ meetingData, setMeetingData }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const handleDateClick = (date) => {
@@ -150,7 +150,7 @@ const Title = styled.h2`
   color: #1a1a1a;
 `;
 
-const Button = styled.button.attrs({ type: 'button' })`
+const Button = styled.button.attrs({ type: "button" })`
   padding: 0.5rem;
   border: none;
   background: none;
@@ -183,7 +183,7 @@ const DaysGrid = styled.div`
   gap: 1px;
 `;
 
-const Day = styled.button.attrs({type:'button'})`
+const Day = styled.button.attrs({ type: "button" })`
   position: relative;
   width: 100%;
   aspect-ratio: 1;
@@ -212,4 +212,4 @@ const Day = styled.button.attrs({type:'button'})`
   }
 `;
 
-export default Calendar;
+export default Calendar_Mobile;

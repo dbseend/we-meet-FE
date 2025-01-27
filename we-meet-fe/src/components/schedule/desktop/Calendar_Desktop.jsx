@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import styled from "styled-components";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const Calendar = ({ meetingData, setMeetingData }) => {
+const Calendar_Desktop = ({ meetingData, setMeetingData }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const handleDateClick = (date) => {
@@ -212,4 +212,4 @@ const Day = styled.button.attrs({type:'button'})`
   }
 `;
 
-export default Calendar;
+export default Calendar_Desktop;
