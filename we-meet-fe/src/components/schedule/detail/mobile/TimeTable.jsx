@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import DayTimeGrid from "./DayTimeGrid";
 
@@ -6,11 +6,8 @@ const TimeTable = ({
   time_range_from,
   time_range_to,
   dates,
-  submissionData,
-  setSubmissionData,
-  events,
-  availiableTimes,
-  selectedIds,
+  availableTimes,
+  setAvailableTimes,
 }) => {
   const [visibleDates, setVisibleDates] = useState([]);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
@@ -27,29 +24,38 @@ const TimeTable = ({
     }
   }, [dates, currentDateIndex]);
 
-  const handleTimeSelect = (date, time, meetingStartTime = "07:00") => {
-    console.log("date: ", date, " time: ", time);
-    const [hour, minutes] = time.split(":").map(Number);
-    const actualTime = `${hour.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
+  // 시간 선택 함수
+  const handleTimeSelect = (date, time) => {
+    setAvailableTimes((prev) => {
+      const existingTimeIndex = prev.findIndex(
+        (slot) =>
+          slot.available_time.date === date &&
+          slot.available_time.time === time
+      );
 
-    setSubmissionData((prev) => ({
-      ...prev,
-      selected_times: prev.selected_times.some(
-        (slot) => slot.date === date && slot.time === actualTime
-      )
-        ? prev.selected_times.filter(
-            (slot) => !(slot.date === date && slot.time === actualTime)
-          )
-        : [...prev.selected_times, { date, time: actualTime }].sort((a, b) =>
-            a.date === b.date
-              ? a.time.localeCompare(b.time)
-              : a.date.localeCompare(b.date)
-          ),
-    }));
+      if (existingTimeIndex !== -1) {
+        // 이미 선택된 시간이면 제거
+        return prev.filter((_, index) => index !== existingTimeIndex);
+      } else {
+        // 새로운 시간 추가 및 정렬
+        const newTime = {
+          available_time: { date, time },
+          priority: "available",
+        };
+
+        return [...prev, newTime].sort((a, b) => {
+          const timeA = a.available_time;
+          const timeB = b.available_time;
+          return timeA.date === timeB.date
+            ? timeA.time.localeCompare(timeB.time)
+            : timeA.date.localeCompare(timeB.date);
+        });
+      }
+    });
   };
-
+  
+  // 시작, 종료 시간 기반으로 시간표 생성(30분 단위)
+  // TODO: 15분 단위로 변경
   const generateTimeSlots = () => {
     if (!time_range_from && !time_range_to) return [];
     const slots = [];
@@ -62,7 +68,6 @@ const TimeTable = ({
     }
     return slots;
   };
-
   const timeSlots = generateTimeSlots();
 
   return (
@@ -80,11 +85,8 @@ const TimeTable = ({
             key={date}
             date={date}
             timeSlots={timeSlots}
-            selectedTimes={submissionData.selected_times}
-            events={events[date] || []}
+            availableTimes={availableTimes}
             onTimeSelect={handleTimeSelect}
-            availableTimes={availiableTimes}
-            selectedIds={selectedIds}
           />
         ))}
       </GridContainer>

@@ -1,35 +1,16 @@
+import { useState } from "react";
 import styled from "styled-components";
 import TimeSlot from "./TimSlot";
 import { parseISOString } from "../../../../utils/dateTimeFormat";
 
-/**
- * DayTimeGrid 컴포넌트 - 하루의 전체 시간표를 표시
- *
- * @param {string} date - 표시할 날짜 (YYYY-MM-DD 형식)
- * @param {Array<string>} timeSlots - 표시할 시간 슬롯 배열 (예: ["09:00", "09:30", ...])
- * @param {Array<{date: string, time: string}>} selectedTimes - 선택된 시간 목록
- * @param {Function} onTimeSelect - 시간 선택 시 호출될 콜백 함수 (date, time) => void
- * @param {Array<{
- *   user_id: string,
- *   user_name: string,
- *   selected_times: Array<string>
- * }>} availableTimes - 각 사용자별 가능한 시간 정보
- * @param {Array} events - 해당 날짜의 Google Calendar 이벤트 목록
- * @returns {JSX.Element} 하루 시간표 그리드 컴포넌트
- */
-const DayTimeGrid = ({
-  date,
-  timeSlots,
-  selectedTimes,
-  onTimeSelect,
-  availableTimes,
-  selectedIds,
-  events = [], // 새로 추가된 prop
-}) => {
+const DayTimeGrid = ({ date, timeSlots, availableTimes, onTimeSelect }) => {
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [events, setEvents] = useState([]);
+
   // 해당 날짜, 시간을 선택한 사용자 필터 함수
   const getAvailableUsers = (date, time) => {
     // 응답한 사용자가 아무도 없는 경우
-    if (!availableTimes) {
+    if (availableTimes.length == 0) {
       console.log("No available times data");
       return [];
     }
@@ -39,7 +20,7 @@ const DayTimeGrid = ({
         (at) => !selectedIds?.length || selectedIds.includes(at.participant_id)
       )
       .filter((at) => {
-        return at.selected_times.some((datetime) => {
+        return at.availableTimes.some((datetime) => {
           const { date: atDate, time: atTime } = parseISOString(datetime);
           return atTime === time && atDate === date;
         });
@@ -55,11 +36,11 @@ const DayTimeGrid = ({
   const getEventForTimeSlot = (time) => {
     if (!events?.length) return null;
 
-    return events.find(event => {
+    return events.find((event) => {
       const eventStart = new Date(event.start.dateTime || event.start.date);
       const eventEnd = new Date(event.end.dateTime || event.end.date);
       const slotTime = new Date(`${date}T${time}`);
-      
+
       return slotTime >= eventStart && slotTime < eventEnd;
     });
   };
@@ -75,7 +56,7 @@ const DayTimeGrid = ({
               key={`${date}-${time}`}
               date={date}
               time={time}
-              isSelected={selectedTimes.some(
+              isSelected={availableTimes.some(
                 (slot) => slot.date === date && slot.time === time
               )}
               onClick={() => onTimeSelect(date, time)}

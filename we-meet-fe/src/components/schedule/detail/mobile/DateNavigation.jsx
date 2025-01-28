@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import styled from "styled-components";
 
-const DateNavigation = ({ dates, currentDateIndex, setCurrentDateIndex }) => {
+const DateNavigation = ({ dates }) => {
+  const [currentDateIndex, setCurrentDateIndex] = useState(0);
+
   const MAX_DAYS_SHOWN = 3;
 
   const canNavigatePrev = currentDateIndex > 0;

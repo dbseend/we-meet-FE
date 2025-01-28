@@ -43,4 +43,26 @@ export const getMeeting = async (meetingId) => {
   }
 };
 
+// 미팅 응답 api
+// const addParticipantWithTimes = async (participantData) => {
+//   try {
+//     // 참가자 추가 및 가능 시간 추가를 트랜잭션으로 처리
+//     const { data: participant, error: participantError } = await supabase.rpc(
+//       "add_participant_with_times",
+//       {
+//         p_meeting_id: meetingId,
+//         p_user_id: userId,
+//         p_available_times: availableTimes,
+//       }
+//     );
 
+//     if (participantError) throw participantError;
+
+//     return participant;
+//   } catch (error) {
+//     setError(error.message);
+//     throw error;
+//   } finally {
+//     setLoading(false);
+//   }
+// };
