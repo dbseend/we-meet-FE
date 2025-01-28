@@ -1,18 +1,13 @@
+import { useEffect } from "react";
 import styled from "styled-components";
 
-/**
- * TimeSlot 컴포넌트 - 개별 시간 슬롯을 표시
- * @param {boolean} isSelected - 선택 여부
- * @param {Function} onClick - 클릭 핸들러
- * @param {Array} availableUsers - 해당 시간에 가능한 사용자 목록
- * @param {Object} event - Google Calendar 이벤트 정보
- */
 const TimeSlot = ({
   isSelected,
   onClick,
   availableUsers = [],
   event = null,
 }) => {
+
   const userCount = availableUsers.length;
 
   // 시간대별 참여 가능 인원에 따른 배경색 결정

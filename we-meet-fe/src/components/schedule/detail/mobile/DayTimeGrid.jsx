@@ -1,35 +1,48 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import TimeSlot from "./TimSlot";
 import { parseISOString } from "../../../../utils/dateTimeFormat";
+import TimeSlot from "./TimSlot";
 
 const DayTimeGrid = ({ date, timeSlots, availableTimes, onTimeSelect }) => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [events, setEvents] = useState([]);
 
+  const formattedAvailableTimes = useMemo(() => {
+    return availableTimes.map((slot) => {
+      const parsed = parseISOString(slot.available_time);
+      return {
+        ...slot,
+        date: parsed.date,
+        time: parsed.time,
+      };
+    });
+  }, [availableTimes]);
+
   // 해당 날짜, 시간을 선택한 사용자 필터 함수
   const getAvailableUsers = (date, time) => {
     // 응답한 사용자가 아무도 없는 경우
-    if (availableTimes.length == 0) {
-      console.log("No available times data");
-      return [];
-    }
+    // if (availableTimes.length == 0) {
+    //   console.log("No available times data");
+    //   return [];
+    // }
 
-    const filteredUsers = availableTimes
-      .filter(
-        (at) => !selectedIds?.length || selectedIds.includes(at.participant_id)
-      )
-      .filter((at) => {
-        return at.availableTimes.some((datetime) => {
-          const { date: atDate, time: atTime } = parseISOString(datetime);
-          return atTime === time && atDate === date;
-        });
-      })
-      .map((at) => ({
-        name: at.user_name,
-        id: at.user_id,
-      }));
-    return filteredUsers;
+    // const filteredUsers = availableTimes
+    //   .filter(
+    //     (at) => !selectedIds?.length || selectedIds.includes(at.participant_id)
+    //   )
+    //   .filter((at) => {
+    //     return at.availableTimes.some((datetime) => {
+    //       const { date: atDate, time: atTime } = parseISOString(datetime);
+    //       return atTime === time && atDate === date;
+    //     });
+    //   })
+    //   .map((at) => ({
+    //     name: at.user_name,
+    //     id: at.user_id,
+    //   }));
+    // return filteredUsers;
+
+    return [];
   };
 
   // 해당 시간대의 이벤트 찾기
@@ -51,17 +64,24 @@ const DayTimeGrid = ({ date, timeSlots, availableTimes, onTimeSelect }) => {
       <TimeGridContainer>
         {timeSlots.map((time) => {
           const event = getEventForTimeSlot(time);
+          const isSelected = formattedAvailableTimes.some((slot) => {
+            const matches = slot.date === date && slot.time === time;
+            // 디버깅 로그
+            // if (matches) {
+            //   console.log("Match found:", { date, time, slot });
+            // } else{
+            //   console.log("Match not found:", { date, time, slot });
+            // }
+            return matches;
+          });
+
           return (
             <TimeSlot
               key={`${date}-${time}`}
-              date={date}
-              time={time}
-              isSelected={availableTimes.some(
-                (slot) => slot.date === date && slot.time === time
-              )}
+              isSelected={isSelected}
               onClick={() => onTimeSelect(date, time)}
               availableUsers={getAvailableUsers(date, time)}
-              event={event} // TimeSlot 컴포넌트에 이벤트 정보 전달
+              event={event}
             />
           );
         })}

@@ -44,25 +44,60 @@ export const getMeeting = async (meetingId) => {
 };
 
 // 미팅 응답 api
-// const addParticipantWithTimes = async (participantData) => {
-//   try {
-//     // 참가자 추가 및 가능 시간 추가를 트랜잭션으로 처리
-//     const { data: participant, error: participantError } = await supabase.rpc(
-//       "add_participant_with_times",
-//       {
-//         p_meeting_id: meetingId,
-//         p_user_id: userId,
-//         p_available_times: availableTimes,
-//       }
-//     );
+export const addMeetingAvailability = async (
+  participantData,
+  availableTimes
+) => {
+  console.log(participantData);
+  try {
+    // 1. 참가자 추가
+    const { data: participant, error: participantError } = await supabase
+      .from("meeting_participants")
+      .insert([participantData])
+      .select("participant_id")
+      .single();
 
-//     if (participantError) throw participantError;
+    if (participantError) throw participantError;
 
-//     return participant;
-//   } catch (error) {
-//     setError(error.message);
-//     throw error;
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+    // 2. 가능 시간 추가
+    const availableTimeRecords = availableTimes.map((time) => ({
+      participant_id: participantData.participant_id,
+      available_time: time.available_time,
+      priority: time.priority,
+    }));
+
+    const { error: timesError } = await supabase
+      .from("available_times")
+      .insert(availableTimeRecords);
+
+    if (timesError) throw timesError;
+
+    return { success: true, data: participant };
+  } catch (error) {
+    console.error("Error adding meeting availability:", error);
+    return { success: false, error };
+  }
+};
+
+// 참가자와 가능 시간 정보를 가져오는 함수
+export const fetchMeetingAvailability = async (meetingId) => {
+  try {
+    const { data, error } = await supabase
+      .from('meeting_participants')
+      .select(`
+        *,
+        available_times!inner(*)
+      `)
+      .eq('meeting_id', meetingId)
+
+    if (error) throw error
+
+    return { 
+      success: true, 
+      data: data 
+    }
+  } catch (error) {
+    console.error('Error fetching meeting availability:', error)
+    return { success: false, error }
+  }
+}

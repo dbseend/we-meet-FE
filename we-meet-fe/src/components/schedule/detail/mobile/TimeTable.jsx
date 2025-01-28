@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { fetchMeetingAvailability } from "../../../../api/schedule/ScheduleAPI";
+import { convertToUTC, sortTimeSlots } from "../../../../utils/dateTimeFormat";
 import DayTimeGrid from "./DayTimeGrid";
 
 const TimeTable = ({
@@ -8,13 +10,13 @@ const TimeTable = ({
   dates,
   availableTimes,
   setAvailableTimes,
+  currentDateIndex,
+  MAX_DAYS_SHOWN,
 }) => {
   const [visibleDates, setVisibleDates] = useState([]);
-  const [currentDateIndex, setCurrentDateIndex] = useState(0);
-  const MAX_DAYS_SHOWN = 3;
 
   useEffect(() => {
-    if (dates) {
+    const getVisibleDates = () =>{
       const start = currentDateIndex * MAX_DAYS_SHOWN;
       const newVisibleDates = dates.slice(
         start,
@@ -22,38 +24,37 @@ const TimeTable = ({
       );
       setVisibleDates(newVisibleDates);
     }
+    if (dates) {
+      getVisibleDates();
+    }
+
+    
   }, [dates, currentDateIndex]);
 
   // 시간 선택 함수
   const handleTimeSelect = (date, time) => {
+    const selectedDateTime = convertToUTC(date, time);
+
     setAvailableTimes((prev) => {
       const existingTimeIndex = prev.findIndex(
-        (slot) =>
-          slot.available_time.date === date &&
-          slot.available_time.time === time
+        (slot) => slot.available_time === selectedDateTime
       );
 
+      // 이미 선택된 시간이면 제거
       if (existingTimeIndex !== -1) {
-        // 이미 선택된 시간이면 제거
         return prev.filter((_, index) => index !== existingTimeIndex);
-      } else {
-        // 새로운 시간 추가 및 정렬
-        const newTime = {
-          available_time: { date, time },
-          priority: "available",
-        };
-
-        return [...prev, newTime].sort((a, b) => {
-          const timeA = a.available_time;
-          const timeB = b.available_time;
-          return timeA.date === timeB.date
-            ? timeA.time.localeCompare(timeB.time)
-            : timeA.date.localeCompare(timeB.date);
-        });
       }
+
+      // 새로운 시간 추가 및 정렬
+      const newTime = {
+        available_time: selectedDateTime,
+        priority: "available", // TODO: 사용자가 선택 할 수 있도록 추후에 변경 필요
+      };
+
+      return sortTimeSlots([...prev, newTime]);
     });
   };
-  
+
   // 시작, 종료 시간 기반으로 시간표 생성(30분 단위)
   // TODO: 15분 단위로 변경
   const generateTimeSlots = () => {

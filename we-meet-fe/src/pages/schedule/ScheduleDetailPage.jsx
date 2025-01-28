@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getMeeting } from "../../api/schedule/ScheduleAPI";
+import {
+  getMeeting,
+  addMeetingAvailability,
+  fetchMeetingAvailability,
+} from "../../api/schedule/ScheduleAPI";
 import { copyToClipboard, generateUUID } from "../../utils/util";
 import styled from "styled-components";
 import { Link } from "lucide-react";
@@ -19,16 +23,17 @@ const ScheduleDetailPage = () => {
   );
   // 투표 응답: 사용자 정보
   const [participantData, setParticipantData] = useState({
-    participant_id: null,
+    participant_id: generateUUID(),
     meeting_id: id,
     user_id: user ? user.id : null,
     anonymous_user_id: user ? null : generateUUID(),
     user_name: user ? user.user_metadata.name : "",
   });
   // 투표 응답: 선택 시간
-  const [availableTimes, setAvailableTimes] = useState([
-  ])
+  const [availableTimes, setAvailableTimes] = useState([]);
 
+  const [currentDateIndex, setCurrentDateIndex] = useState(0);
+  const MAX_DAYS_SHOWN = 3;
 
   // 미팅 데이터 가져오기
   useEffect(() => {
@@ -47,6 +52,20 @@ const ScheduleDetailPage = () => {
       }
     };
 
+    const getMeetingAvailability = async () => {
+      try {
+        const result = await fetchMeetingAvailability(id);
+        console.log(result);
+
+        if (result.success) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch availiable data:", error);
+        setIsLoading(false);
+      }
+    };
+
     if (!meetingData) {
       console.log("fetch meeting data");
       fetchMeetingData();
@@ -55,40 +74,21 @@ const ScheduleDetailPage = () => {
       console.log(meetingData);
       setIsLoading(false);
     }
+    getMeetingAvailability();
   }, [id]);
 
-  // TODO: 투표 응답 
+  // TODO: 투표 응답
   const handleAvailiableTimeSubmit = async () => {
-    console.log(participantData.availiable_times);
-    const formattedTimes = participantData.availiable_times.map((slot) => {
-      const [year, month, day] = slot.date.split("-");
-      const [hours, minutes] = slot.time.split(":");
-      return new Date(Date.UTC(year, month - 1, day, hours, minutes))
-        .toISOString()
-        .replace("Z", "+00");
-    });
-    console.log(formattedTimes);
-    if (participantData.user_name == "") {
-      alert("이름을 입력해주세요");
-      return;
+    try {
+      const result = await addMeetingAvailability(
+        participantData,
+        availableTimes
+      );
+      console.log(result);
+    } catch (error) {
+      console.error("미팅 응답 실패:", error);
+      alert("미팅 응답 실패");
     }
-
-    if (participantData.availiable_times.length === 0) {
-      alert("시간을 선택해주세요");
-      return;
-    }
-
-    setParticipantData((prev) => ({
-      ...prev,
-      availiable_times: formattedTimes,
-    }));
-
-    const submitData = {
-      ...participantData,
-      selected_times: formattedTimes,
-    };
-
-    // await submitTimeSelections(submitData);
   };
 
   if (isLoading) return <div>로딩 중...</div>;
@@ -106,7 +106,12 @@ const ScheduleDetailPage = () => {
       </Header>
 
       {/* 날짜 네비게이션 */}
-      <DateNavigation dates={meetingData.dates} />
+      <DateNavigation
+        dates={meetingData.dates}
+        currentDateIndex={currentDateIndex}
+        setCurrentDateIndex={setCurrentDateIndex}
+        MAX_DAYS_SHOWN={MAX_DAYS_SHOWN}
+      />
 
       {/* 시간표 */}
       <TimeTable
@@ -117,6 +122,8 @@ const ScheduleDetailPage = () => {
         setParticipantData={setParticipantData}
         availableTimes={availableTimes}
         setAvailableTimes={setAvailableTimes}
+        currentDateIndex={currentDateIndex}
+        MAX_DAYS_SHOWN={MAX_DAYS_SHOWN}
       />
 
       <Content>

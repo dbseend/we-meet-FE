@@ -2,16 +2,18 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import styled from "styled-components";
 
-const DateNavigation = ({ dates }) => {
-  const [currentDateIndex, setCurrentDateIndex] = useState(0);
+const DateNavigation = ({
+  dates,
+  currentDateIndex,
+  setCurrentDateIndex,
+  MAX_DAYS_SHOWN,
+}) => {
 
-  const MAX_DAYS_SHOWN = 3;
+  const canNavigatePrev = currentDateIndex > 0; // 이전 페이지로 이동 가능한지 확인
+  const canNavigateNext = dates ? (currentDateIndex + 1) * MAX_DAYS_SHOWN < dates.length : false; // 다음 페이지로 이동 가능한지 확인
 
-  const canNavigatePrev = currentDateIndex > 0;
-  const canNavigateNext = dates
-    ? (currentDateIndex + 1) * MAX_DAYS_SHOWN < dates.length
-    : false;
 
+  // 날짜 페이지 이동 핸들러
   const handleDateNavigation = (direction) => {
     setCurrentDateIndex((prev) => {
       const maxIndex = Math.ceil(dates.length / MAX_DAYS_SHOWN) - 1;
