@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 const TimeSlot = ({
   isSelected,
-  onClick,
   availableUsers = [],
   event = null,
 }) => {
@@ -38,7 +37,6 @@ const TimeSlot = ({
     <StyledTimeSlot
       backgroundColor={getBackgroundColor()}
       isSelected={isSelected}
-      onClick={onClick}
       $hasEvent={!!event}
       $eventColor={event?.calendarInfo?.color}
     >

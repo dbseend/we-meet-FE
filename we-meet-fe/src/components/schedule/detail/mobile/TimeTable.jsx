@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
-import { fetchMeetingAvailability } from "../../../../api/schedule/ScheduleAPI";
 import { convertToUTC, sortTimeSlots } from "../../../../utils/dateTimeFormat";
 import DayTimeGrid from "./DayTimeGrid";
 
@@ -11,48 +11,42 @@ const TimeTable = ({
   availableTimes,
   setAvailableTimes,
   currentDateIndex,
+  respondedData,
+  setRespondedData,
   MAX_DAYS_SHOWN,
 }) => {
+  const TimeSlotPriority = {
+    AVAILABLE: "available",
+    PREFERRED: "preferred"
+  };
+  const [timeSlots, setTimeSlots] = useState(generateTimeSlots());
   const [visibleDates, setVisibleDates] = useState([]);
+  const { id } = useParams();
 
   useEffect(() => {
-    const getVisibleDates = () =>{
+    const getVisibleDates = () => {
       const start = currentDateIndex * MAX_DAYS_SHOWN;
       const newVisibleDates = dates.slice(
         start,
         Math.min(start + MAX_DAYS_SHOWN, dates.length)
       );
       setVisibleDates(newVisibleDates);
-    }
+    };
+
     if (dates) {
       getVisibleDates();
     }
-
-    
   }, [dates, currentDateIndex]);
 
-  // 시간 선택 함수
-  const handleTimeSelect = (date, time) => {
-    const selectedDateTime = convertToUTC(date, time);
-
-    setAvailableTimes((prev) => {
-      const existingTimeIndex = prev.findIndex(
-        (slot) => slot.available_time === selectedDateTime
-      );
-
-      // 이미 선택된 시간이면 제거
-      if (existingTimeIndex !== -1) {
-        return prev.filter((_, index) => index !== existingTimeIndex);
-      }
-
-      // 새로운 시간 추가 및 정렬
-      const newTime = {
-        available_time: selectedDateTime,
-        priority: "available", // TODO: 사용자가 선택 할 수 있도록 추후에 변경 필요
-      };
-
-      return sortTimeSlots([...prev, newTime]);
-    });
+  // 시간대 선택 처리 함수
+  const handleTimeSelect = (date, timeSlot) => {
+    setTimeSlots(prevSlots => 
+      prevSlots.map(slot => 
+        slot.time === timeSlot.time
+          ? { ...slot, isSelected: !slot.isSelected }
+          : slot
+      )
+    );
   };
 
   // 시작, 종료 시간 기반으로 시간표 생성(30분 단위)
@@ -62,15 +56,22 @@ const TimeTable = ({
     const slots = [];
     const [startHour] = time_range_from.split(":").map(Number);
     const [endHour] = time_range_to.split(":").map(Number);
-
+  
     for (let hour = startHour; hour <= endHour; hour++) {
-      slots.push(`${hour.toString().padStart(2, "0")}:00`);
-      slots.push(`${hour.toString().padStart(2, "0")}:30`);
+      slots.push({
+        time: `${hour.toString().padStart(2, "0")}:00`,
+        isSelected: false,
+        priority: TimeSlotPriority.AVAILABLE
+      });
+      slots.push({
+        time: `${hour.toString().padStart(2, "0")}:30`,
+        isSelected: false,
+        priority: TimeSlotPriority.AVAILABLE
+      });
     }
     return slots;
   };
-  const timeSlots = generateTimeSlots();
-
+  
   return (
     <TimeTableSection>
       <TimeLabels>
@@ -83,11 +84,11 @@ const TimeTable = ({
       <GridContainer daysCount={visibleDates.length}>
         {visibleDates.map((date) => (
           <DayTimeGrid
-            key={date}
             date={date}
             timeSlots={timeSlots}
             availableTimes={availableTimes}
-            onTimeSelect={handleTimeSelect}
+            respondedData={respondedData}
+            setRespondedData={setRespondedData}
           />
         ))}
       </GridContainer>

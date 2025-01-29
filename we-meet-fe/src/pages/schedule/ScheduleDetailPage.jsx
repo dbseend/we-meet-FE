@@ -21,6 +21,7 @@ const ScheduleDetailPage = () => {
   const [meetingData, setMeetingData] = useState(
     location.state?.meetingData || null
   );
+  const [respondedData, setRespondedData] = useState(null);
   // 투표 응답: 사용자 정보
   const [participantData, setParticipantData] = useState({
     participant_id: generateUUID(),
@@ -37,45 +38,69 @@ const ScheduleDetailPage = () => {
 
   // 미팅 데이터 가져오기
   useEffect(() => {
-    const fetchMeetingData = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const result = await getMeeting(id);
-        console.log(result);
-
-        if (result.success) {
-          setMeetingData(result.data);
-          setIsLoading(false);
+        // 두 요청을 병렬로 처리
+        const [meetingResult, availabilityResult] = await Promise.all([
+          !meetingData ? getMeeting(id) : Promise.resolve({ success: true, data: meetingData }),
+          fetchMeetingAvailability(id)
+        ]);
+  
+        if (meetingResult.success) {
+          setMeetingData(meetingResult.data);
+        }
+        if (availabilityResult.success) {
+          setRespondedData(availabilityResult.data);
         }
       } catch (error) {
-        console.error("Failed to fetch meeting data:", error);
+        console.error("Failed to fetch data:", error);
+      } finally {
         setIsLoading(false);
       }
     };
-
-    const getMeetingAvailability = async () => {
-      try {
-        const result = await fetchMeetingAvailability(id);
-        console.log(result);
-
-        if (result.success) {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("Failed to fetch availiable data:", error);
-        setIsLoading(false);
-      }
-    };
-
-    if (!meetingData) {
-      console.log("fetch meeting data");
-      fetchMeetingData();
-    } else {
-      console.log("meeting data exists!");
-      console.log(meetingData);
-      setIsLoading(false);
-    }
-    getMeetingAvailability();
+  
+    fetchData();
   }, [id]);
+  // useEffect(() => {
+  //   const fetchMeetingData = async () => {
+  //     try {
+  //       const result = await getMeeting(id);
+  //       console.log(result);
+
+  //       if (result.success) {
+  //         setMeetingData(result.data);
+  //         setIsLoading(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to fetch meeting data:", error);
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   const getMeetingAvailability = async () => {
+  //     try {
+  //       const result = await fetchMeetingAvailability(id);
+  //       console.log(result);
+
+  //       if (result.success) {
+  //         setRespondedData(result.data);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to fetch availiable data:", error);
+  //     }
+  //   };
+
+  //   if (!meetingData) {
+  //     console.log("fetch meeting data");
+  //     fetchMeetingData();
+  //   } else {
+  //     console.log("meeting data exists!");
+  //     console.log(meetingData);
+  //     setIsLoading(false);
+  //   }
+  //   getMeetingAvailability();
+  // }, [id]);
 
   // TODO: 투표 응답
   const handleAvailiableTimeSubmit = async () => {
@@ -123,6 +148,8 @@ const ScheduleDetailPage = () => {
         availableTimes={availableTimes}
         setAvailableTimes={setAvailableTimes}
         currentDateIndex={currentDateIndex}
+        respondedData={respondedData}
+        setRespondedData={setRespondedData}
         MAX_DAYS_SHOWN={MAX_DAYS_SHOWN}
       />
 
