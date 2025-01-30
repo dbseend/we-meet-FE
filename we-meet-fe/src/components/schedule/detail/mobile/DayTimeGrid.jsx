@@ -1,59 +1,19 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { parseISOString } from "../../../../utils/dateTimeFormat";
 import TimeSlot from "./TimSlot";
 
-const DayTimeGrid = ({ date, timeSlots, availableTimes, respondedData, setRespondedData }) => {
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [events, setEvents] = useState([]);
-
-  const [selectedMap, setSelectedMap] = useState(new Map());
-  const [availabilityMap, setAvailabilityMap] = useState(new Map());
-
-  const getIsSelected = () =>{
-    
-  }
-
-
-  // 특정 날짜와 시간에 대한 사용자 조회
-  const getAvailableUsers = (date, time) => {
-    const key = `${date}-${time}`;
-    return availabilityMap.get(key) || [];
-  };
-
-  // 해당 시간대의 이벤트 찾기
-  const getEventForTimeSlot = (time) => {
-    if (!events?.length) return null;
-
-    return events.find((event) => {
-      const eventStart = new Date(event.start.dateTime || event.start.date);
-      const eventEnd = new Date(event.end.dateTime || event.end.date);
-      const slotTime = new Date(`${date}T${time}`);
-
-      return slotTime >= eventStart && slotTime < eventEnd;
-    });
-  };
-
+const DayTimeGrid = ({ date, timeSlots, participantData, onTimeSelect }) => {
+  
   return (
     <DayColumn>
       <DateHeader>{date}</DateHeader>
-      <TimeGridContainer>
-        {timeSlots.map((time) => {
-          const key = {date}-{time};
-          const event = getEventForTimeSlot(time);
-          const availableUsers = getAvailableUsers(date, time);
-          const isSelected = availableUsers.length > 0;
-
-          return (
-            <TimeSlot
-              key={`${date}-${time}`}
-              isSelected={isSelected}
-              // availableUsers={availableUsers}
-              // event={event}
-            />
-          );
-        })}
-      </TimeGridContainer>
+      {timeSlots.map((slot) => (
+        <TimeSlot
+          key={slot.time}
+          onClick={() => onTimeSelect(date, slot.time)} 
+          isSelected={slot.isSelected}
+          priority={slot.priority}
+        />
+      ))}
     </DayColumn>
   );
 };

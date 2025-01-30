@@ -28,3 +28,35 @@ export const sortTimeSlots = (slots) => {
     return a.available_time.localeCompare(b.available_time);
   });
 };
+
+export const generateTimeSlots = (dates, time_range_from, time_range_to) => {
+  if (!time_range_from || !time_range_to || !dates || dates.length === 0) return [];
+  
+  const result = {};
+  const [startHour] = time_range_from.split(":").map(Number);
+  const [endHour] = time_range_to.split(":").map(Number);
+
+  // 각 날짜별로 시간대 생성
+  dates.forEach(date => {
+    const slots = [];
+    
+    for (let hour = startHour; hour <= endHour; hour++) {
+      slots.push({
+        time: `${hour.toString().padStart(2, "0")}:00`,
+        isSelected: false,
+        priority: "available",
+        date: date // 날짜 정보 추가
+      });
+      slots.push({
+        time: `${hour.toString().padStart(2, "0")}:30`,
+        isSelected: false,
+        priority: "available",
+        date: date // 날짜 정보 추가
+      });
+    }
+    
+    result[date] = slots;
+  });
+
+  return result;
+};

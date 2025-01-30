@@ -11,6 +11,7 @@ import styled from "styled-components";
 import { Link } from "lucide-react";
 import TimeTable from "../../components/schedule/detail/mobile/TimeTable";
 import DateNavigation from "../../components/schedule/detail/mobile/DateNavigation";
+import { generateTimeSlots } from "../../utils/dateTimeFormat";
 
 const ScheduleDetailPage = () => {
   const { user } = useAuth();
@@ -18,10 +19,27 @@ const ScheduleDetailPage = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
 
+  const initMeetingState = {
+    meeting_id: "",
+    creator_id: "",
+    anonymous_creator_id: "",
+    title: "",
+    description: "",
+    dates: [],
+    time_range_from: "",
+    time_range_to: "",
+    is_online: false,
+    deadline: "",
+    max_participants: 0,
+    online_meeting_url: "",
+    current_participants: 0,
+    recommended_times: [],
+    meeting_participants: [],
+  };
   const [meetingData, setMeetingData] = useState(
-    location.state?.meetingData || null
+    location.state?.meetingData || initMeetingState
   );
-  const [respondedData, setRespondedData] = useState(null);
+
   // 투표 응답: 사용자 정보
   const [participantData, setParticipantData] = useState({
     participant_id: generateUUID(),
@@ -29,29 +47,35 @@ const ScheduleDetailPage = () => {
     user_id: user ? user.id : null,
     anonymous_user_id: user ? null : generateUUID(),
     user_name: user ? user.user_metadata.name : "",
+    available_times: []
   });
-  // 투표 응답: 선택 시간
-  const [availableTimes, setAvailableTimes] = useState([]);
-
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [visibleDates, setVisibleDates] = useState([]);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const MAX_DAYS_SHOWN = 3;
 
-  // 미팅 데이터 가져오기
+  // 데이터 페칭을 위한 useEffect
   useEffect(() => {
     const fetchData = async () => {
+      if (!id) return;
+
       setIsLoading(true);
       try {
-        // 두 요청을 병렬로 처리
         const [meetingResult, availabilityResult] = await Promise.all([
-          !meetingData ? getMeeting(id) : Promise.resolve({ success: true, data: meetingData }),
-          fetchMeetingAvailability(id)
+          meetingData.meeting_id === ""
+            ? getMeeting(id)
+            : Promise.resolve({ success: true, data: meetingData }),
+          fetchMeetingAvailability(id),
         ]);
-  
+
         if (meetingResult.success) {
           setMeetingData(meetingResult.data);
         }
         if (availabilityResult.success) {
-          setRespondedData(availabilityResult.data);
+          setMeetingData((prev) => ({
+            ...prev,
+            meeting_participants: availabilityResult.data,
+          }));
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -59,56 +83,42 @@ const ScheduleDetailPage = () => {
         setIsLoading(false);
       }
     };
-  
+
     fetchData();
   }, [id]);
-  // useEffect(() => {
-  //   const fetchMeetingData = async () => {
-  //     try {
-  //       const result = await getMeeting(id);
-  //       console.log(result);
 
-  //       if (result.success) {
-  //         setMeetingData(result.data);
-  //         setIsLoading(false);
-  //       }
-  //     } catch (error) {
-  //       console.error("Failed to fetch meeting data:", error);
-  //       setIsLoading(false);
-  //     }
-  //   };
+  // 보이는 날짜 계산을 위한 useEffect
+  useEffect(() => {
+    if (!meetingData?.dates) return;
 
-  //   const getMeetingAvailability = async () => {
-  //     try {
-  //       const result = await fetchMeetingAvailability(id);
-  //       console.log(result);
+    const start = currentDateIndex * MAX_DAYS_SHOWN;
+    const newVisibleDates = meetingData.dates.slice(
+      start,
+      Math.min(start + MAX_DAYS_SHOWN, meetingData.dates.length)
+    );
+    setVisibleDates(newVisibleDates);
+  }, [meetingData?.dates, currentDateIndex, MAX_DAYS_SHOWN]);
 
-  //       if (result.success) {
-  //         setRespondedData(result.data);
-  //       }
-  //     } catch (error) {
-  //       console.error("Failed to fetch availiable data:", error);
-  //     }
-  //   };
+  // 시간 슬롯 생성을 위한 useEffect
+  useEffect(() => {
+    console.log(meetingData);
+    if (
+      meetingData?.time_range_from === "" &&
+      meetingData?.time_range_to === ""
+    )
+      return;
 
-  //   if (!meetingData) {
-  //     console.log("fetch meeting data");
-  //     fetchMeetingData();
-  //   } else {
-  //     console.log("meeting data exists!");
-  //     console.log(meetingData);
-  //     setIsLoading(false);
-  //   }
-  //   getMeetingAvailability();
-  // }, [id]);
+    const slots = generateTimeSlots(
+      meetingData.dates,
+      meetingData.time_range_from,
+      meetingData.time_range_to
+    );
+    setTimeSlots(slots);
+  }, [meetingData?.time_range_from, meetingData?.time_range_to]);
 
-  // TODO: 투표 응답
   const handleAvailiableTimeSubmit = async () => {
     try {
-      const result = await addMeetingAvailability(
-        participantData,
-        availableTimes
-      );
+      const result = await addMeetingAvailability(participantData);
       console.log(result);
     } catch (error) {
       console.error("미팅 응답 실패:", error);
@@ -140,17 +150,12 @@ const ScheduleDetailPage = () => {
 
       {/* 시간표 */}
       <TimeTable
-        time_range_from={meetingData.time_range_from}
-        time_range_to={meetingData.time_range_to}
-        dates={meetingData.dates}
+        timeSlots={timeSlots}
+        setTimeSlots={setTimeSlots}
+        visibleDates={visibleDates}
+        meetingData={meetingData}
         participantData={participantData}
         setParticipantData={setParticipantData}
-        availableTimes={availableTimes}
-        setAvailableTimes={setAvailableTimes}
-        currentDateIndex={currentDateIndex}
-        respondedData={respondedData}
-        setRespondedData={setRespondedData}
-        MAX_DAYS_SHOWN={MAX_DAYS_SHOWN}
       />
 
       <Content>

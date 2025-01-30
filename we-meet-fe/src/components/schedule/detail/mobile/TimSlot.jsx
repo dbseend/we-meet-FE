@@ -5,8 +5,8 @@ const TimeSlot = ({
   isSelected,
   availableUsers = [],
   event = null,
+  onClick,
 }) => {
-
   const userCount = availableUsers.length;
 
   // 시간대별 참여 가능 인원에 따른 배경색 결정
@@ -39,6 +39,7 @@ const TimeSlot = ({
       isSelected={isSelected}
       $hasEvent={!!event}
       $eventColor={event?.calendarInfo?.color}
+      onClick={onClick} // onClick prop 추가
     >
       {(userCount > 0 || event) && (
         <>

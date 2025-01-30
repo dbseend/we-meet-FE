@@ -44,13 +44,17 @@ export const getMeeting = async (meetingId) => {
 };
 
 // 미팅 응답 api
-export const addMeetingAvailability = async (
-  participantData,
-  availableTimes
-) => {
-  console.log(participantData);
+export const addMeetingAvailability = async (meetingState) => {
   try {
-    // 1. 참가자 추가
+    // 1. 참가자 데이터 준비
+    const participantData = {
+      meeting_id: meetingState.meeting_id,
+      user_id: meetingState.user_id,
+      anonymous_user_id: meetingState.anonymous_user_id,
+      user_name: meetingState.user_name
+    };
+
+    // 2. 참가자 추가 및 ID 받기
     const { data: participant, error: participantError } = await supabase
       .from("meeting_participants")
       .insert([participantData])
@@ -59,20 +63,29 @@ export const addMeetingAvailability = async (
 
     if (participantError) throw participantError;
 
-    // 2. 가능 시간 추가
-    const availableTimeRecords = availableTimes.map((time) => ({
-      participant_id: participantData.participant_id,
+    // 3. 가능 시간 데이터 준비
+    const availableTimeRecords = meetingState.available_times.map((time) => ({
+      participant_id: participant.participant_id, // 새로 생성된 participant_id 사용
       available_time: time.available_time,
       priority: time.priority,
     }));
+    console.log(availableTimeRecords);
 
+    // 4. 가능 시간 추가
     const { error: timesError } = await supabase
       .from("available_times")
       .insert(availableTimeRecords);
 
     if (timesError) throw timesError;
 
-    return { success: true, data: participant };
+    // 5. 성공 시 참가자 정보와 가능 시간 정보 모두 반환
+    return { 
+      success: true, 
+      data: {
+        ...participant,
+        availiable_times: availableTimeRecords
+      }
+    };
   } catch (error) {
     console.error("Error adding meeting availability:", error);
     return { success: false, error };
@@ -83,21 +96,23 @@ export const addMeetingAvailability = async (
 export const fetchMeetingAvailability = async (meetingId) => {
   try {
     const { data, error } = await supabase
-      .from('meeting_participants')
-      .select(`
+      .from("meeting_participants")
+      .select(
+        `
         *,
         available_times!inner(*)
-      `)
-      .eq('meeting_id', meetingId)
+      `
+      )
+      .eq("meeting_id", meetingId);
 
-    if (error) throw error
+    if (error) throw error;
 
-    return { 
-      success: true, 
-      data: data 
-    }
+    return {
+      success: true,
+      data: data,
+    };
   } catch (error) {
-    console.error('Error fetching meeting availability:', error)
-    return { success: false, error }
+    console.error("Error fetching meeting availability:", error);
+    return { success: false, error };
   }
-}
+};
