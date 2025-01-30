@@ -7,10 +7,10 @@ const TimeTable = ({
   timeSlots,
   setTimeSlots,
   visibleDates,
-  meetingData,
   participantData,
   setParticipantData,
 }) => {
+
   const handleTimeSelect = (date, time) => {
     const dateTimeKey = convertToUTC(date,time);
 

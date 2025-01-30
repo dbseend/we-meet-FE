@@ -111,8 +111,10 @@ const ScheduleDetailPage = () => {
     const slots = generateTimeSlots(
       meetingData.dates,
       meetingData.time_range_from,
-      meetingData.time_range_to
+      meetingData.time_range_to,
+      meetingData.meeting_participants
     );
+    console.log(slots);
     setTimeSlots(slots);
   }, [meetingData?.time_range_from, meetingData?.time_range_to]);
 

@@ -6,23 +6,24 @@ const TimeSlot = ({
   availableUsers = [],
   event = null,
   onClick,
+  participants
 }) => {
-  const userCount = availableUsers.length;
+  
+  const participantsCount = participants.length;  // 시간대별 참여 가능 인원에 따른 배경색 결정
 
-  // 시간대별 참여 가능 인원에 따른 배경색 결정
   const getBackgroundColor = () => {
     if (isSelected) return "#4b9bff"; // 내가 선택한 시간
-    if (userCount === 0) return event ? "#f8f9fa" : "white"; // 이벤트가 있는 경우 연한 회색 배경
+    if (participantsCount === 0) return event ? "#f8f9fa" : "white"; // 이벤트가 있는 경우 연한 회색 배경
 
     // 참여 가능 인원이 많을수록 진한 색상 표시
-    const intensity = Math.min(255, 255 - userCount * 30);
+    const intensity = Math.min(255, 255 - participantsCount * 30);
     return `rgb(255, ${intensity}, 0)`;
   };
 
   // 툴팁 내용 생성
   const getTooltipContent = () => {
     const parts = [];
-    if (userCount > 0) {
+    if (participantsCount > 0) {
       parts.push(
         `참여 가능: ${availableUsers.map((user) => user.name).join(", ")}`
       );
@@ -41,7 +42,7 @@ const TimeSlot = ({
       $eventColor={event?.calendarInfo?.color}
       onClick={onClick} // onClick prop 추가
     >
-      {(userCount > 0 || event) && (
+      {(participantsCount > 0 || event) && (
         <>
           <Tooltip>{getTooltipContent()}</Tooltip>
         </>

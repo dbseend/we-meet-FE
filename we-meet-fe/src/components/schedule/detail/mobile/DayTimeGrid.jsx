@@ -1,17 +1,33 @@
+import { useMemo } from "react";
 import styled from "styled-components";
 import TimeSlot from "./TimSlot";
 
-const DayTimeGrid = ({ date, timeSlots, participantData, onTimeSelect }) => {
-  
+const DayTimeGrid = ({
+  date,
+  timeSlots,
+  participantData,
+  onTimeSelect,
+}) => {
+
+  const participantsMap = useMemo(() => {
+    if (!timeSlots) return new Map();
+    
+    return timeSlots.reduce((map, slot) => {
+      map.set(slot.time, slot.participants);
+      return map;
+    }, new Map());
+  }, [timeSlots]);
+
   return (
     <DayColumn>
       <DateHeader>{date}</DateHeader>
       {timeSlots.map((slot) => (
         <TimeSlot
           key={slot.time}
-          onClick={() => onTimeSelect(date, slot.time)} 
+          onClick={() => onTimeSelect(date, slot.time)}
           isSelected={slot.isSelected}
           priority={slot.priority}
+          participants={participantsMap.get(slot.time) || []}
         />
       ))}
     </DayColumn>

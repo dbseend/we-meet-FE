@@ -29,34 +29,48 @@ export const sortTimeSlots = (slots) => {
   });
 };
 
-export const generateTimeSlots = (dates, time_range_from, time_range_to) => {
-  if (!time_range_from || !time_range_to || !dates || dates.length === 0) return [];
-  
-  const result = {};
+export const generateTimeSlots = (dates, time_range_from, time_range_to, participants) => {
+  if (!time_range_from || !time_range_to || !dates || dates.length === 0)
+    return [];
+
   const [startHour] = time_range_from.split(":").map(Number);
   const [endHour] = time_range_to.split(":").map(Number);
 
-  // 각 날짜별로 시간대 생성
-  dates.forEach(date => {
-    const slots = [];
-    
-    for (let hour = startHour; hour <= endHour; hour++) {
-      slots.push({
-        time: `${hour.toString().padStart(2, "0")}:00`,
-        isSelected: false,
-        priority: "available",
-        date: date // 날짜 정보 추가
-      });
-      slots.push({
-        time: `${hour.toString().padStart(2, "0")}:30`,
-        isSelected: false,
-        priority: "available",
-        date: date // 날짜 정보 추가
-      });
-    }
-    
-    result[date] = slots;
+  // 시간 문자열 미리 생성
+  const timeStrings = Array.from({ length: (endHour - startHour + 1) * 2 }, (_, i) => {
+    const hour = startHour + Math.floor(i / 2);
+    const minute = i % 2 === 0 ? '00' : '30';
+    return `${hour.toString().padStart(2, '0')}:${minute}`;
   });
 
-  return result;
+  // 결과 객체 생성
+  return dates.reduce((result, date) => {
+    // 현재 날짜에 대한 참가자 가능 시간 맵 생성
+    const dayAvailability = {};
+    participants.forEach(participant => {
+      participant.available_times
+        .filter(at => at.available_time.startsWith(date))
+        .forEach(at => {
+          const time = at.available_time.split('T')[1].substring(0, 5);
+          if (!dayAvailability[time]) {
+            dayAvailability[time] = [];
+          }
+          dayAvailability[time].push({
+            user_name: participant.user_name,
+            priority: at.priority
+          });
+        });
+    });
+
+    // 슬롯 생성
+    result[date] = timeStrings.map(time => ({
+      time,
+      isSelected: false,
+      priority: "available",
+      date,
+      participants: dayAvailability[time] || []
+    }));
+
+    return result;
+  }, {});
 };
