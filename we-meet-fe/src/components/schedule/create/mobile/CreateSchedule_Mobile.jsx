@@ -274,7 +274,7 @@ const Checkbox = styled.input`
 
 const Button = styled.button`
   width: 100%;
-  background: #ff9500;
+  background: ${({theme}) => theme.colors.primary.main2};
   color: white;
   padding: 0.75rem;
   border: none;

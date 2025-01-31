@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { GoogleLogin } from "../../../api/auth/AuthAPI";
 import styled from "styled-components";
-import { Menu, X, Bell, Calendar, User, Settings } from "lucide-react";
+import { Calendar, LogIn, Menu, User, X } from "lucide-react";
 
 const Header_Mobile = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
     { title: "일정 생성", icon: Calendar, url: "/meeting/create" },
     { title: "마이페이지", icon: User, url: "/myPage" },
-    { title: "알림센터", icon: Bell, url: "/" },
-    { title: "설정", icon: Settings, url: "/settings" },
   ];
+
+  const handleNavClick = (item) => {
+    setIsOpen(false);
+    if (item.onClick) {
+      item.onClick();
+    }
+  };
 
   return (
     <HeaderContainer>
@@ -19,22 +27,41 @@ const Header_Mobile = () => {
         <TopBar>
           <Link to="/">
             <Logo>
-              <Title>스케줄러</Title>
+              <Title>Teampo</Title>
             </Logo>
           </Link>
-          <MobileButton onClick={() => setIsOpen(!isOpen)}>
-            <IconWrapper as={isOpen ? X : Menu} />
-          </MobileButton>
+          {user ? (
+            <MobileButton onClick={() => setIsOpen(!isOpen)}>
+              <IconWrapper as={isOpen ? X : Menu} />
+            </MobileButton>
+          ) : (
+            <SignInButton 
+            onClick={()=>GoogleLogin()}
+            $primary>로그인</SignInButton>
+          )}
         </TopBar>
 
         <MobileMenu $isOpen={isOpen}>
           <MenuContent>
-            {navLinks.map(({ title, icon: Icon, url }) => (
-              <NavLink key={title} to={url} onClick={() => setIsOpen(!isOpen)}>
-                <StyledIcon as={Icon} />
-                <span>{title}</span>
-              </NavLink>
-            ))}
+            {navLinks.map(({ title, icon: Icon, url, onClick }) =>
+              url ? (
+                <NavLink
+                  key={title}
+                  to={url}
+                >
+                  <StyledIcon as={Icon} />
+                  <span>{title}</span>
+                </NavLink>
+              ) : (
+                <MenuItem
+                  key={title}
+                  onClick={() => handleNavClick({ onClick })}
+                >
+                  <StyledIcon as={Icon} />
+                  <span>{title}</span>
+                </MenuItem>
+              )
+            )}
           </MenuContent>
         </MobileMenu>
       </Nav>
@@ -116,9 +143,43 @@ const NavLink = styled(Link)`
   }
 `;
 
+const MenuItem = styled.div`
+  // NavLink와 동일한 스타일 적용
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.background.hover};
+  }
+`;
+
 const StyledIcon = styled.div`
   width: 1.25rem;
   height: 1.25rem;
+`;
+
+const SignInButton = styled.button`
+  padding: ${(props) => (props.$large ? "1rem 2rem" : "0.5rem 1rem")};
+  border-radius: 0.5rem;
+  font-size: ${(props) => (props.$large ? "1.125rem" : "1rem")};
+  font-weight: ${(props) => (props.$large ? "600" : "normal")};
+  transition: all 0.2s;
+
+  ${(props) =>
+    props.$primary
+      ? `
+    background-color: #ff4548;
+    color: white;
+    &:hover { background-color: #ff4548; }
+  `
+      : `
+    background-color: white;
+    color: #ff4548;
+    border: 2px solid #ff4548;
+    &:hover { background-color: #fff1f1; }
+  `}
 `;
 
 export default Header_Mobile;

@@ -203,12 +203,12 @@ const Day = styled.button.attrs({ type: "button" })`
   ${(props) =>
     props.$isSelected &&
     `
-    background-color: #eee;
+    background-color: #FF5F62;
     border-radius: 50%;
   `}
 
   &:hover {
-    background-color: ${(props) => (props.$isSelected ? "#e0e0e0" : "#f5f5f5")};
+    background-color: ${(props) => (props.$isSelected ? "#FF5F62" : "#f5f5f5")};
   }
 `;
 
