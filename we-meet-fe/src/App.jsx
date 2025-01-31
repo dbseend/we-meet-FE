@@ -6,6 +6,7 @@ import {theme} from "./styles/theme";
 import HomePage from "./pages/home/index";
 import CreateSchedulePage from "./pages/schedule/CreateSchedulePage";
 import ScheduleDetailPage from "./pages/schedule/ScheduleDetailPage";
+import OnBoardingFlow from "./pages/home/OnboardingFlow";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/onBoarding" element={<OnBoardingFlow/>} />
               <Route path="/meeting">
                 <Route path="create" element={<CreateSchedulePage />} />
                 <Route path=":id" element={<ScheduleDetailPage />} />

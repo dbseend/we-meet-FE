@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { GoogleLogin } from "../../api/auth/AuthAPI";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { GoogleLogin } from "../../api/auth/AuthAPI";
+import { ArrowRight, Calendar, Clock, Users } from 'lucide-react';
 import styled from "styled-components";
-import { Calendar, Users, Clock, ArrowRight } from 'lucide-react';
 
 const Home_Mobile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log("Current user state:", user);
-  }, [user]); // user가 변경될 때마다 실행되도록 수정
+  const handleStart = async() =>{
+    if(user){
+      navigate("/meeting/create");
+    } else{
+      GoogleLogin();
+    }
+  }
 
-  // 로그인 핸들러 추가
-  const handleLogin = async () => {
-    console.log("Attempting login...");
-    await GoogleLogin();
-  };
 
   return (
     <PageContainer>
@@ -34,7 +34,9 @@ const Home_Mobile = () => {
               </SubHeading>
               
               <ButtonGroup>
-                <StyledButton $primary $large>
+                <StyledButton 
+                onClick={()=>handleStart()}
+                $primary $large>
                   시작하기
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </StyledButton>
