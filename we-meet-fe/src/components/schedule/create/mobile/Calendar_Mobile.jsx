@@ -132,7 +132,7 @@ const Calendar_Mobile = ({ meetingData, setMeetingData }) => {
 
 const CalendarContainer = styled.div`
   background: white;
-  width: 100%;
+  width: 90%;
   max-width: 800px;
   margin: 0 auto;
 `;

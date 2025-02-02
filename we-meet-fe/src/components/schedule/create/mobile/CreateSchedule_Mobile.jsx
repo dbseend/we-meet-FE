@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import Calendar_Mobile from "./Calendar_Mobile";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
 import { useAuth } from "../../../../context/AuthContext";
 import { formatTime } from "../../../../utils/dateTimeFormat";
 import { generateUUID } from "../../../../utils/util";
-import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
+import Step1 from "./Step1";
+import Step2 from "./Step2";
 
 const CreateSchedule_Mobile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [step, setStep] = useState(1);
 
   const [meetingData, setMeetingData] = useState({
     creator_id: user ? user.id : null,
@@ -41,7 +44,6 @@ const CreateSchedule_Mobile = () => {
         console.log("미팅 생성 성공:", result.data);
         alert("미팅 생성 성공");
 
-        // URL Parameter와 state 함께 전달
         navigate(`/meeting/${meetingId}`, {
           state: {
             meetingData: result.data[0],
@@ -81,107 +83,44 @@ const CreateSchedule_Mobile = () => {
 
   return (
     <FormContainer onSubmit={handleSubmit}>
-      {/* <FormHeader>
-        <Title>회의 일정 만들기</Title>
-      </FormHeader> */}
-
-      <FormGroup>
-        <Label>회의 제목</Label>
-        <Input
-          type="text"
-          placeholder="회의 제목을 입력하세요"
-          value={meetingData.title}
-          onChange={(e) =>
-            setMeetingData({ ...meetingData, title: e.target.value })
-          }
-        />
-      </FormGroup>
-
-      <FormGroup>
-        <Label>회의 설명</Label>
-        <TextArea
-          placeholder="회의에 대한 설명을 입력하세요"
-          value={meetingData.description}
-          onChange={(e) =>
-            setMeetingData({ ...meetingData, description: e.target.value })
-          }
-        />
-      </FormGroup>
-
-      <Calendar_Mobile
-        meetingData={meetingData}
-        setMeetingData={setMeetingData}
-      />
-
-      <FormGroup>
-        <Label>회의 예정 시간</Label>
-        <TimeGroup>
-          <TimeInput
-            type="time"
-            value={meetingData.time_range_from}
-            onChange={(e) =>
-              setMeetingData({
-                ...meetingData,
-                time_range_from: formatTime(e.target.value),
-              })
-            }
+      <Steps>
+        <Step $active={step === 1}>기본 정보</Step>
+        <Step $active={step === 2}>상세 정보</Step>
+      </Steps>
+      {step === 1 ? (
+        <>
+          <Step1
+            meetingData={meetingData}
+            setMeetingData={setMeetingData}
+            setStep={setStep}
           />
-          <TimeLabel>부터</TimeLabel>
-          <TimeInput
-            type="time"
-            value={meetingData.time_range_to}
-            onChange={(e) =>
-              setMeetingData({
-                ...meetingData,
-                time_range_to: formatTime(e.target.value),
-              })
-            }
+          <ButtonGroup>
+            <StepButton onClick={() => setStep(2)} $primary>
+              다음
+              <ArrowRight size={20} />
+            </StepButton>
+          </ButtonGroup>
+        </>
+      ) : (
+        <>
+          <Step2
+            meetingData={meetingData}
+            setMeetingData={setMeetingData}
+            setStep={setStep}
+            handleSubmit={handleSubmit}
           />
-          <TimeLabel>까지</TimeLabel>
-        </TimeGroup>
-      </FormGroup>
-
-      <FormGroup>
-        <Label>투표 마감 시간</Label>
-        <TimeInput
-          type="time"
-          value={meetingData.deadline}
-          onChange={(e) =>
-            setMeetingData({
-              ...meetingData,
-              deadline: formatTime(e.target.value),
-            })
-          }
-        />
-      </FormGroup>
-
-      <FormGroup>
-        <Label>참여 인원</Label>
-        <Input
-          type="number"
-          placeholder="참여 인원을 입력하세요"
-          value={meetingData.max_participants}
-          onChange={(e) =>
-            setMeetingData({
-              ...meetingData,
-              max_participants: parseInt(e.target.value),
-            })
-          }
-        />
-      </FormGroup>
-
-      <CheckboxLabel>
-        <span>원격 회의</span>
-        <Checkbox
-          type="checkbox"
-          checked={meetingData.is_online}
-          onChange={(e) =>
-            setMeetingData({ ...meetingData, is_online: e.target.checked })
-          }
-        />
-      </CheckboxLabel>
-
-      <Button type="submit">생성하기</Button>
+          <ButtonGroup>
+            <Button type="button" onClick={() => setStep(1)}>
+              <ArrowLeft size={20} />
+              이전
+            </Button>
+            <StepButton onClick={() => handleSubmit()} type="submit" $primary>
+              회의 생성
+              <ArrowRight size={20} />
+            </StepButton>
+          </ButtonGroup>{" "}
+        </>
+      )}
     </FormContainer>
   );
 };
@@ -190,91 +129,9 @@ const FormContainer = styled.form`
   padding: 0 0.5rem 0.5rem 0.5rem;
 `;
 
-const FormHeader = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const Title = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 500;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e8ecf4;
-  border-radius: 8px;
-  background: #f8fafc;
-  font-size: 1rem;
-
-  &:focus {
-    outline: none;
-    border-color: #ff9500;
-    box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.1);
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e8ecf4;
-  border-radius: 8px;
-  background: #f8fafc;
-  font-size: 1rem;
-  min-height: 100px;
-  resize: vertical;
-
-  &:focus {
-    outline: none;
-    border-color: #ff9500;
-    box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.1);
-  }
-`;
-
-const TimeGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const TimeLabel = styled.span`
-  color: #666;
-  min-width: 4rem;
-`;
-
-const TimeInput = styled(Input)`
-  max-width: 150px;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  margin-top: 1rem;
-`;
-
-const Checkbox = styled.input`
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-`;
-
 const Button = styled.button`
   width: 100%;
-  background: ${({theme}) => theme.colors.primary.main2};
+  background: ${({ theme }) => theme.colors.primary.main2};
   color: white;
   padding: 0.75rem;
   border: none;
@@ -287,6 +144,62 @@ const Button = styled.button`
   &:hover {
     background: #e68600;
   }
+`;
+
+const Steps = styled.div`
+  display: flex;
+  margin-bottom: 2rem;
+`;
+
+const Step = styled.div`
+  flex: 1;
+  text-align: center;
+  color: ${(props) => (props.$active ? "#ff9500" : "#9CA3AF")};
+  font-weight: ${(props) => (props.$active ? "600" : "400")};
+
+  &::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: ${(props) => (props.$active ? "#ff9500" : "#E5E7EB")};
+    margin-top: 0.5rem;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 1.5rem 0 0;
+`;
+
+const StepButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+
+  ${(props) =>
+    props.$primary
+      ? `
+    background-color: #ff4548;
+    color: white;
+    &:hover { background-color: #ff4548; }
+  `
+      : props.$secondary
+      ? `
+    background-color: white;
+    color: #ff4548;
+    border: 2px solid #ff4548;
+    &:hover { background-color: #fff1f1; }
+  `
+      : `
+    color: #6B7280;
+    &:hover { color: #374151; }
+  `}
 `;
 
 export default CreateSchedule_Mobile;

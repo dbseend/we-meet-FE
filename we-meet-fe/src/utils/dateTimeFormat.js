@@ -45,22 +45,24 @@ export const generateTimeSlots = (dates, time_range_from, time_range_to, partici
 
   // 결과 객체 생성
   return dates.reduce((result, date) => {
-    // 현재 날짜에 대한 참가자 가능 시간 맵 생성
-    const dayAvailability = {};
-    participants.forEach(participant => {
-      participant.available_times
-        .filter(at => at.available_time.startsWith(date))
-        .forEach(at => {
-          const time = at.available_time.split('T')[1].substring(0, 5);
-          if (!dayAvailability[time]) {
-            dayAvailability[time] = [];
-          }
-          dayAvailability[time].push({
-            user_name: participant.user_name,
-            priority: at.priority
-          });
-        });
-    });
+    // participants가 있을 때만 dayAvailability 생성
+    const dayAvailability = participants?.length > 0 
+      ? participants.reduce((acc, participant) => {
+          participant.available_times
+            .filter(at => at.available_time.startsWith(date))
+            .forEach(at => {
+              const time = at.available_time.split('T')[1].substring(0, 5);
+              if (!acc[time]) {
+                acc[time] = [];
+              }
+              acc[time].push({
+                user_name: participant.user_name,
+                priority: at.priority
+              });
+            });
+          return acc;
+        }, {})
+      : {};
 
     // 슬롯 생성
     result[date] = timeStrings.map(time => ({
