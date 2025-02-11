@@ -4,7 +4,8 @@ import { useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
 import {
   addMeetingAvailability,
-  fetchMeetingAvailability, getMeeting
+  fetchMeetingAvailability,
+  getMeeting,
 } from "../../api/schedule/ScheduleAPI";
 import DateNavigation from "../../components/schedule/detail/mobile/DateNavigation";
 import TimeTable from "../../components/schedule/detail/mobile/TimeTable";
@@ -59,7 +60,7 @@ const ScheduleDetailPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
-  
+
       setIsLoading(true);
       try {
         const [meetingResult, availabilityResult] = await Promise.all([
@@ -68,25 +69,28 @@ const ScheduleDetailPage = () => {
             : Promise.resolve({ success: true, data: meetingData }),
           fetchMeetingAvailability(id),
         ]);
-  
-        if (meetingResult.success && availabilityResult.success) { // 두 결과 모두 성공했을 때만 상태 업데이트
+
+        if (meetingResult.success && availabilityResult.success) {
+          // 두 결과 모두 성공했을 때만 상태 업데이트
           setMeetingData({
             ...meetingResult.data,
             meeting_participants: availabilityResult.data,
           });
         } else {
           // 하나라도 실패했을 경우 에러 처리
-          console.error("Failed to fetch data:", meetingResult.error || availabilityResult.error);
+          console.error(
+            "Failed to fetch data:",
+            meetingResult.error || availabilityResult.error
+          );
         }
 
-        console.log(meetingResult.data, availabilityResult.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-  
+
     fetchData();
   }, [id]);
 
@@ -104,7 +108,6 @@ const ScheduleDetailPage = () => {
 
   // 시간 슬롯 생성을 위한 useEffect
   useEffect(() => {
-    console.log(meetingData);
     if (
       meetingData?.time_range_from === "" &&
       meetingData?.time_range_to === ""
@@ -117,14 +120,12 @@ const ScheduleDetailPage = () => {
       meetingData.time_range_to,
       meetingData.meeting_participants
     );
-    console.log(slots);
     setTimeSlots(slots);
   }, [meetingData?.time_range_from, meetingData?.time_range_to]);
 
   const handleAvailiableTimeSubmit = async () => {
     try {
       const result = await addMeetingAvailability(participantData);
-      console.log(result);
     } catch (error) {
       console.error("미팅 응답 실패:", error);
       alert("미팅 응답 실패");
@@ -154,7 +155,7 @@ const ScheduleDetailPage = () => {
         </MenuButtonGroup>
       ) : currentStep == 1 ? (
         <StepContainer>
-            <div>1단계: 선호시간을 선택해주세요</div>
+          <div>1단계: 선호시간을 선택해주세요</div>
           <MenuButtonGroup>
             <CopyButton onClick={() => setCurrentStep(2)}>
               <Link size={18} />
@@ -201,7 +202,7 @@ const ScheduleDetailPage = () => {
         currentStep={currentStep}
       />
 
-      {/* <Content>
+      <Content>
         {!user && (
           <Input
             placeholder="이름을 입력하세요"
@@ -214,12 +215,13 @@ const ScheduleDetailPage = () => {
             }
           />
         )}
-      </Content> */}
         <ButtonContainer>
+          {user ? <div>{user.name}</div> : <div>로그인 안 함</div>}
           <SubmitButton onClick={handleAvailiableTimeSubmit}>
             제출하기
           </SubmitButton>
         </ButtonContainer>
+      </Content>
     </Container>
   );
 };

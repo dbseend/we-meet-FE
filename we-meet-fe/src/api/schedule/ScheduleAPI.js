@@ -2,7 +2,6 @@ import { supabase } from "../supabase/supabaseClient";
 
 // 미팅 생성 API
 export const createMeeting = async (meetingData) => {
-  console.log("meeting data", meetingData);
 
   try {
     const { data, error } = await supabase
@@ -45,7 +44,6 @@ export const getMeeting = async (meetingId) => {
 
 // 미팅 응답 api
 export const addMeetingAvailability = async (meetingState) => {
-  console.log(meetingState);
   try {
     // 1. 참가자 데이터 준비
     const participantData = {
@@ -70,7 +68,6 @@ export const addMeetingAvailability = async (meetingState) => {
       available_time: time.available_time,
       priority: time.priority,
     }));
-    console.log(availableTimeRecords);
 
     // 4. 가능 시간 추가
     const { error: timesError } = await supabase
@@ -108,7 +105,6 @@ export const fetchMeetingAvailability = async (meetingId) => {
 
     if (error) throw error;
 
-    console.log(data);
 
     return {
       success: true,
