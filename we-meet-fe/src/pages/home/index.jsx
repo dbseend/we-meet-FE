@@ -5,7 +5,7 @@ import Home_Mobile from "./Home_Mobile";
 const HomePage = () => {
   const { isMobile } = useResponsiveState();
 
-  return <>{isMobile ? <Home_Mobile /> : <Home_Desktop />}</>;
+  return <>{isMobile ? <Home_Mobile /> : <Home_Mobile />}</>;
 };
 
 export default HomePage;
