@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import Calendar_Mobile from "./Calendar_Mobile";
-import { ArrowRight } from "lucide-react";
 
 const Step1 = ({ meetingData, setMeetingData }) => {
   return (

@@ -45,13 +45,14 @@ export const getMeeting = async (meetingId) => {
 
 // 미팅 응답 api
 export const addMeetingAvailability = async (meetingState) => {
+  console.log(meetingState);
   try {
     // 1. 참가자 데이터 준비
     const participantData = {
       meeting_id: meetingState.meeting_id,
       user_id: meetingState.user_id,
       anonymous_user_id: meetingState.anonymous_user_id,
-      user_name: meetingState.user_name
+      user_name: meetingState.user_name,
     };
 
     // 2. 참가자 추가 및 ID 받기
@@ -79,12 +80,12 @@ export const addMeetingAvailability = async (meetingState) => {
     if (timesError) throw timesError;
 
     // 5. 성공 시 참가자 정보와 가능 시간 정보 모두 반환
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         ...participant,
-        availiable_times: availableTimeRecords
-      }
+        availiable_times: availableTimeRecords,
+      },
     };
   } catch (error) {
     console.error("Error adding meeting availability:", error);
@@ -106,6 +107,8 @@ export const fetchMeetingAvailability = async (meetingId) => {
       .eq("meeting_id", meetingId);
 
     if (error) throw error;
+
+    console.log(data);
 
     return {
       success: true,

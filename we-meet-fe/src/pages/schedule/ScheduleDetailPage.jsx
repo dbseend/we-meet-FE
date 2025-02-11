@@ -1,17 +1,16 @@
+import { Link } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import {
-  getMeeting,
-  addMeetingAvailability,
-  fetchMeetingAvailability,
-} from "../../api/schedule/ScheduleAPI";
-import { copyToClipboard, generateUUID } from "../../utils/util";
 import styled from "styled-components";
-import { Link } from "lucide-react";
-import TimeTable from "../../components/schedule/detail/mobile/TimeTable";
+import {
+  addMeetingAvailability,
+  fetchMeetingAvailability, getMeeting
+} from "../../api/schedule/ScheduleAPI";
 import DateNavigation from "../../components/schedule/detail/mobile/DateNavigation";
+import TimeTable from "../../components/schedule/detail/mobile/TimeTable";
+import { useAuth } from "../../context/AuthContext";
 import { generateTimeSlots } from "../../utils/dateTimeFormat";
+import { copyToClipboard, generateUUID } from "../../utils/util";
 
 const ScheduleDetailPage = () => {
   const { user } = useAuth();
@@ -47,18 +46,20 @@ const ScheduleDetailPage = () => {
     user_id: user ? user.id : null,
     anonymous_user_id: user ? null : generateUUID(),
     user_name: user ? user.user_metadata.name : "",
-    available_times: []
+    available_times: [],
   });
   const [timeSlots, setTimeSlots] = useState([]);
   const [visibleDates, setVisibleDates] = useState([]);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const MAX_DAYS_SHOWN = 3;
 
+  const [currentStep, setCurrentStep] = useState(0);
+
   // 데이터 페칭을 위한 useEffect
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
-
+  
       setIsLoading(true);
       try {
         const [meetingResult, availabilityResult] = await Promise.all([
@@ -67,23 +68,25 @@ const ScheduleDetailPage = () => {
             : Promise.resolve({ success: true, data: meetingData }),
           fetchMeetingAvailability(id),
         ]);
-
-        if (meetingResult.success) {
-          setMeetingData(meetingResult.data);
-        }
-        if (availabilityResult.success) {
-          setMeetingData((prev) => ({
-            ...prev,
+  
+        if (meetingResult.success && availabilityResult.success) { // 두 결과 모두 성공했을 때만 상태 업데이트
+          setMeetingData({
+            ...meetingResult.data,
             meeting_participants: availabilityResult.data,
-          }));
+          });
+        } else {
+          // 하나라도 실패했을 경우 에러 처리
+          console.error("Failed to fetch data:", meetingResult.error || availabilityResult.error);
         }
+
+        console.log(meetingResult.data, availabilityResult.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     fetchData();
   }, [id]);
 
@@ -136,11 +139,48 @@ const ScheduleDetailPage = () => {
       <Header>
         <Title>{meetingData.title}</Title>
         <Description>{meetingData.description}</Description>
-        <CopyButton onClick={copyToClipboard}>
-          <Link size={18} />
-          URL 복사
-        </CopyButton>
       </Header>
+
+      {currentStep == 0 ? (
+        <MenuButtonGroup>
+          <CopyButton onClick={copyToClipboard}>
+            <Link size={18} />
+            URL 복사
+          </CopyButton>
+          <CopyButton onClick={() => setCurrentStep(1)}>
+            <Link size={18} />
+            시간 추가
+          </CopyButton>
+        </MenuButtonGroup>
+      ) : currentStep == 1 ? (
+        <StepContainer>
+            <div>1단계: 선호시간을 선택해주세요</div>
+          <MenuButtonGroup>
+            <CopyButton onClick={() => setCurrentStep(2)}>
+              <Link size={18} />
+              다음
+            </CopyButton>
+            <CopyButton onClick={() => setCurrentStep(0)}>
+              <Link size={18} />
+              취소
+            </CopyButton>
+          </MenuButtonGroup>
+        </StepContainer>
+      ) : (
+        <StepContainer>
+          <div>2단계: 가능시간을 선택해주세요</div>
+          <MenuButtonGroup>
+            <CopyButton onClick={() => setCurrentStep(0)}>
+              <Link size={18} />
+              완료
+            </CopyButton>
+            <CopyButton onClick={() => setCurrentStep(0)}>
+              <Link size={18} />
+              취소
+            </CopyButton>
+          </MenuButtonGroup>
+        </StepContainer>
+      )}
 
       {/* 날짜 네비게이션 */}
       <DateNavigation
@@ -158,9 +198,10 @@ const ScheduleDetailPage = () => {
         meetingData={meetingData}
         participantData={participantData}
         setParticipantData={setParticipantData}
+        currentStep={currentStep}
       />
 
-      <Content>
+      {/* <Content>
         {!user && (
           <Input
             placeholder="이름을 입력하세요"
@@ -173,13 +214,12 @@ const ScheduleDetailPage = () => {
             }
           />
         )}
+      </Content> */}
         <ButtonContainer>
-          <UserName>{user ? `${user.user_metadata.name}님` : ""}</UserName>
           <SubmitButton onClick={handleAvailiableTimeSubmit}>
-            응답 제출
+            제출하기
           </SubmitButton>
         </ButtonContainer>
-      </Content>
     </Container>
   );
 };
@@ -193,6 +233,8 @@ const Container = styled.div`
 `;
 
 const Header = styled.div`
+  display: flex;
+  flex-direction: row;
   margin-bottom: 1.5rem;
 `;
 
@@ -206,6 +248,16 @@ const Description = styled.p`
   color: #666;
   font-size: 0.875rem;
   margin-bottom: 1rem;
+`;
+
+const MenuButtonGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const StepContainer = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const CopyButton = styled.button`

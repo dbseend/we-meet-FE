@@ -5,7 +5,6 @@ import TimeSlot from "./TimSlot";
 const DayTimeGrid = ({
   date,
   timeSlots,
-  participantData,
   onTimeSelect,
 }) => {
 
@@ -49,11 +48,6 @@ const DateHeader = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`;
-
-const TimeGridContainer = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 export default DayTimeGrid;

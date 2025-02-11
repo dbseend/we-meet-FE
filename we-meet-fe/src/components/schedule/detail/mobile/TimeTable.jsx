@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import styled from "styled-components";
 import { convertToUTC } from "../../../../utils/dateTimeFormat";
 import DayTimeGrid from "./DayTimeGrid";
@@ -9,9 +8,13 @@ const TimeTable = ({
   visibleDates,
   participantData,
   setParticipantData,
+  currentStep
 }) => {
 
   const handleTimeSelect = (date, time) => {
+    if(currentStep == 0) return ;
+
+    const priority = currentStep == 1 ? "PREFER" : "AVAILABLE"
     const dateTimeKey = convertToUTC(date,time);
 
     setTimeSlots((prev) => {
@@ -53,7 +56,7 @@ const TimeTable = ({
             ...availableTimes,
             {
               available_time: dateTimeKey,
-              priority: "available",
+              priority: priority,
             },
           ],
         };
@@ -111,7 +114,6 @@ const DateHeader = styled.div`
 
 const TimeTableSection = styled.div`
   display: flex;
-  // margin: 0 -1rem; // 네거티브 마진으로 컨테이너 패딩 상쇄
 `;
 
 const TimeLabel = styled.div`

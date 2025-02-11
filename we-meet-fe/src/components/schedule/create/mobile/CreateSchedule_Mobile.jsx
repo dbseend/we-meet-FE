@@ -1,10 +1,9 @@
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
 import { useAuth } from "../../../../context/AuthContext";
-import { formatTime } from "../../../../utils/dateTimeFormat";
 import { generateUUID } from "../../../../utils/util";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
@@ -94,12 +93,12 @@ const CreateSchedule_Mobile = () => {
             setMeetingData={setMeetingData}
             setStep={setStep}
           />
-          <ButtonGroup>
+          <Step1ButtonGroup>
             <StepButton onClick={() => setStep(2)} $primary>
               다음
               <ArrowRight size={20} />
             </StepButton>
-          </ButtonGroup>
+          </Step1ButtonGroup>
         </>
       ) : (
         <>
@@ -109,16 +108,16 @@ const CreateSchedule_Mobile = () => {
             setStep={setStep}
             handleSubmit={handleSubmit}
           />
-          <ButtonGroup>
-            <Button type="button" onClick={() => setStep(1)}>
-              <ArrowLeft size={20} />
+          <Step2ButtonGroup>
+            <StepButton type="button" onClick={() => setStep(1)} $primary>
               이전
-            </Button>
-            <StepButton onClick={() => handleSubmit()} type="submit" $primary>
+              <ArrowLeft size={20} />
+            </StepButton>
+            <StepButton onClick={(e) => handleSubmit(e)} $primary>
               회의 생성
               <ArrowRight size={20} />
             </StepButton>
-          </ButtonGroup>{" "}
+          </Step2ButtonGroup>
         </>
       )}
     </FormContainer>
@@ -167,10 +166,15 @@ const Step = styled.div`
   }
 `;
 
-const ButtonGroup = styled.div`
+const Step1ButtonGroup = styled.div`
+  width: 100%;
   display: flex;
+  padding: 1rem 0.5rem 0 0;
   justify-content: flex-end;
-  margin: 1rem 1.5rem 0 0;
+`;
+
+const Step2ButtonGroup = styled(Step1ButtonGroup)`
+  justify-content: space-between;
 `;
 
 const StepButton = styled.button`

@@ -30,6 +30,7 @@ export const sortTimeSlots = (slots) => {
 };
 
 export const generateTimeSlots = (dates, time_range_from, time_range_to, participants) => {
+  console.log(participants);
   if (!time_range_from || !time_range_to || !dates || dates.length === 0)
     return [];
 

@@ -1,11 +1,7 @@
 export const theme = {
     colors: {
-      primary: {
-        main1: '#FF4E6B',   
-        main2: '#FF5F62',   
-        main3: '#FF6F5B',   
-        main4: '#FF7E53',   
-        main5: '#FF904A',   
+      primary: {   
+        main: '#FF5F62',  
       },
       secondary: {
         main: '#6B7280',    // 보조 색상
