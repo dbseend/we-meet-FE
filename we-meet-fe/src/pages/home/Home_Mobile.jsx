@@ -1,22 +1,23 @@
-import { useEffect } from "react";
+import { ArrowRight, Calendar, Clock, Users } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { GoogleLogin } from "../../api/auth/AuthAPI";
-import { ArrowRight, Calendar, Clock, Users } from 'lucide-react';
 import styled from "styled-components";
+import SignInModal from "../../components/home/SignInModal";
 
 const Home_Mobile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleStart = async() =>{
-    if(user){
-      navigate("/meeting/create");
-    } else{
-      GoogleLogin();
-    }
-  }
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const handleStart = async () => {
+    if (user) {
+      navigate("/meeting/create");
+    } else {
+      setIsModalOpen(true);
+    }
+  };
 
   return (
     <PageContainer>
@@ -25,25 +26,24 @@ const Home_Mobile = () => {
           <HeroContent>
             <ContentLeft>
               <MainHeading>
-                일정 조율,<br />
+                일정 조율,
+                <br />
                 <span>한번에</span> 해결하세요
               </MainHeading>
               <SubHeading>
-                팀 일정 조율부터 화상회의까지<br />
+                팀 일정 조율부터 화상회의까지
+                <br />
                 Teampo 하나로 충분합니다
               </SubHeading>
-              
+
               <ButtonGroup>
-                <StyledButton 
-                onClick={()=>handleStart()}
-                $primary $large>
+                <StyledButton onClick={() => handleStart()} $primary $large>
                   시작하기
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </StyledButton>
-                {/* <StyledButton $large>
-                  자세히 알아보기
-                </StyledButton> */}
               </ButtonGroup>
+
+              <SignInModal isOpen={isModalOpen} onClose={()=>setIsModalOpen(false)}/>
 
               <FeaturesGrid>
                 <FeatureCard>
@@ -73,7 +73,7 @@ const Home_Mobile = () => {
   );
 };
 
-const CORAL = '#FF5F62';
+const CORAL = "#FF5F62";
 
 const PageContainer = styled.div`
   min-h-screen bg-gradient-to-b from-red-50 to-white
@@ -89,17 +89,20 @@ const StyledButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: ${props => props.$large ? '1rem 2rem' : '0.5rem 1rem'};
+  padding: ${(props) => (props.$large ? "1rem 2rem" : "0.5rem 1rem")};
   border-radius: 0.5rem;
-  font-size: ${props => props.$large ? '1.125rem' : '1rem'};
-  font-weight: ${props => props.$large ? '600' : 'normal'};
+  font-size: ${(props) => (props.$large ? "1.125rem" : "1rem")};
+  font-weight: ${(props) => (props.$large ? "600" : "normal")};
   transition: all 0.2s;
-  
-  ${props => props.$primary ? `
+
+  ${(props) =>
+    props.$primary
+      ? `
     background-color: ${CORAL};
     color: white;
     &:hover { background-color: #ff4548; }
-  ` : `
+  `
+      : `
     background-color: white;
     color: ${CORAL};
     border: 2px solid ${CORAL};

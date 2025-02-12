@@ -1,10 +1,10 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
 import { useAuth } from "../../../../context/AuthContext";
+import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
 import { generateUUID } from "../../../../utils/util";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import styled from "styled-components";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
 
@@ -14,18 +14,26 @@ const CreateSchedule_Mobile = () => {
   const [step, setStep] = useState(1);
 
   const [meetingData, setMeetingData] = useState({
-    creator_id: user ? user.id : null,
-    anonymous_creator_id: user ? null : generateUUID(),
+    creator_id: null,
+    anonymous_creator_id: null,
     title: "",
     description: "",
     dates: [],
     time_range_from: "09:00:00",
     time_range_to: "18:00:00",
     is_online: false,
-    deadline: "18:00:00",
     max_participants: 4,
     online_meeting_url: "",
   });
+
+  // 로그인, 비로그인 사용자 구분
+  useEffect(() => {
+    setMeetingData((prevData) => ({
+      ...prevData,
+      creator_id: user ? user.id : null,
+      anonymous_creator_id: user ? null : generateUUID(),
+    }));
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,6 +88,35 @@ const CreateSchedule_Mobile = () => {
     };
   };
 
+  const validateStep1 = () => {
+    if (!meetingData.title.trim()) {
+      alert("회의 제목을 입력해주세요");
+      return;
+    }
+
+    if (meetingData.dates.length === 0) {
+      alert("회의 날짜를 선택해주세요");
+      return;
+    }
+
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const hasPastDate = meetingData.dates.some((date) => {
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+    return selectedDate < today;
+  });
+
+  if (hasPastDate) {
+    alert("오늘 이전 날짜는 선택할 수 없습니다.");
+    return;
+  }
+
+    setStep(2);
+  };
+
   return (
     <FormContainer onSubmit={handleSubmit}>
       <Steps>
@@ -94,7 +131,7 @@ const CreateSchedule_Mobile = () => {
             setStep={setStep}
           />
           <Step1ButtonGroup>
-            <StepButton onClick={() => setStep(2)} $primary>
+            <StepButton type="button" onClick={() => validateStep1()} $primary>
               다음
               <ArrowRight size={20} />
             </StepButton>

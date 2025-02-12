@@ -1,18 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Calendar, Menu, User, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
-import { GoogleLogin } from "../../../api/auth/AuthAPI";
 import styled from "styled-components";
-import { Calendar, LogIn, Menu, User, X } from "lucide-react";
+import { GoogleLogin } from "../../../api/auth/AuthAPI";
+import { useAuth } from "../../../context/AuthContext";
 
 const Header_Mobile = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
     { title: "일정 생성", icon: Calendar, url: "/meeting/create" },
     { title: "마이페이지", icon: User, url: "/myPage" },
   ];
+
+  useEffect(()=>{
+    console.log(user);
+  }, [user]);
 
   const handleNavClick = (item) => {
     setIsOpen(false);
@@ -31,9 +35,13 @@ const Header_Mobile = () => {
             </Logo>
           </Link>
           {user ? (
+            <>
+            <div>{user.user_metadata.name}님</div>
+            <div onClick={()=>signOut()}>로그아웃</div>
             <MobileButton onClick={() => setIsOpen(!isOpen)}>
               <IconWrapper as={isOpen ? X : Menu} />
             </MobileButton>
+            </>
           ) : (
             <SignInButton 
             onClick={()=>GoogleLogin()}

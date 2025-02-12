@@ -32,19 +32,6 @@ const Step2 = ({ meetingData, setMeetingData }) => {
           <TimeLabel>까지</TimeLabel>
         </TimeGroup>
       </FormGroup>
-      <FormGroup>
-        <Label>투표 마감 시간</Label>
-        <TimeInput
-          type="time"
-          value={meetingData.deadline}
-          onChange={(e) =>
-            setMeetingData({
-              ...meetingData,
-              deadline: formatTime(e.target.value),
-            })
-          }
-        />
-      </FormGroup>
 
       <FormGroup>
         <Label>참여 인원</Label>

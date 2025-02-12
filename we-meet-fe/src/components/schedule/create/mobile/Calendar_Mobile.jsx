@@ -6,6 +6,7 @@ const Calendar_Mobile = ({ meetingData, setMeetingData }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const handleDateClick = (date) => {
+    
     const dateString = date.toISOString();
     const newDates = Array.isArray(meetingData.dates)
       ? [...meetingData.dates]

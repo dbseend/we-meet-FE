@@ -3,6 +3,7 @@ import { supabase } from "../supabase/supabaseClient";
 // 미팅 생성 API
 export const createMeeting = async (meetingData) => {
 
+  console.log(meetingData);
   try {
     const { data, error } = await supabase
       .from("meetings")
@@ -10,6 +11,8 @@ export const createMeeting = async (meetingData) => {
       .select();
 
     if (error) throw error;
+
+    console.log(data);
 
     return { success: true, data };
   } catch (error) {

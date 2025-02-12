@@ -71,6 +71,7 @@ const ScheduleDetailPage = () => {
         ]);
 
         if (meetingResult.success && availabilityResult.success) {
+          console.log(meetingResult.data, availabilityResult.data);
           // 두 결과 모두 성공했을 때만 상태 업데이트
           setMeetingData({
             ...meetingResult.data,
@@ -121,7 +122,7 @@ const ScheduleDetailPage = () => {
       meetingData.meeting_participants
     );
     setTimeSlots(slots);
-  }, [meetingData?.time_range_from, meetingData?.time_range_to]);
+  }, [meetingData.dates, meetingData?.time_range_from, meetingData?.time_range_to, meetingData.meeting_participants]);
 
   const handleAvailiableTimeSubmit = async () => {
     try {
