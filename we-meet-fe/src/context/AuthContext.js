@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 초기 세션 확인
+    // 초기 세션 확인 - 한 번만 호출
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error(error);
@@ -19,15 +19,10 @@ export const AuthProvider = ({ children }) => {
       setUser(user ?? null);
 
       if (user) {
-        // 첫 로그인 여부 확인 및 DB 저장
         checkAndSaveFirstLogin(user).then(() => setLoading(false));
       } else {
         setLoading(false);
       }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
     });
 
     // 인증 상태 변경 구독
@@ -42,7 +37,6 @@ export const AuthProvider = ({ children }) => {
 
   const checkAndSaveFirstLogin = async (user) => {
     try {
-
       const { data: existingUser, error: selectError } = await supabase
         .from("users")
         .select("*")

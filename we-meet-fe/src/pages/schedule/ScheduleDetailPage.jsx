@@ -84,7 +84,6 @@ const ScheduleDetailPage = () => {
             meetingResult.error || availabilityResult.error
           );
         }
-
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -122,7 +121,12 @@ const ScheduleDetailPage = () => {
       meetingData.meeting_participants
     );
     setTimeSlots(slots);
-  }, [meetingData.dates, meetingData?.time_range_from, meetingData?.time_range_to, meetingData.meeting_participants]);
+  }, [
+    meetingData.dates,
+    meetingData?.time_range_from,
+    meetingData?.time_range_to,
+    meetingData.meeting_participants,
+  ]);
 
   const handleAvailiableTimeSubmit = async () => {
     try {
@@ -145,41 +149,23 @@ const ScheduleDetailPage = () => {
 
       {currentStep == 0 ? (
         <MenuButtonGroup>
-          <CopyButton onClick={copyToClipboard}>
-            <Link size={18} />
-            URL 복사
-          </CopyButton>
-          <CopyButton onClick={() => setCurrentStep(1)}>
-            <Link size={18} />
-            시간 추가
-          </CopyButton>
+          <CopyButton onClick={copyToClipboard}>URL 복사</CopyButton>
+          <CopyButton onClick={() => setCurrentStep(1)}>시간 추가</CopyButton>
         </MenuButtonGroup>
       ) : currentStep == 1 ? (
         <StepContainer>
           <div>1단계: 선호시간을 선택해주세요</div>
           <MenuButtonGroup>
-            <CopyButton onClick={() => setCurrentStep(2)}>
-              <Link size={18} />
-              다음
-            </CopyButton>
-            <CopyButton onClick={() => setCurrentStep(0)}>
-              <Link size={18} />
-              취소
-            </CopyButton>
+            <CopyButton onClick={() => setCurrentStep(2)}>다음</CopyButton>
+            <CopyButton onClick={() => setCurrentStep(0)}>취소</CopyButton>
           </MenuButtonGroup>
         </StepContainer>
       ) : (
         <StepContainer>
           <div>2단계: 가능시간을 선택해주세요</div>
           <MenuButtonGroup>
-            <CopyButton onClick={() => setCurrentStep(0)}>
-              <Link size={18} />
-              완료
-            </CopyButton>
-            <CopyButton onClick={() => setCurrentStep(0)}>
-              <Link size={18} />
-              취소
-            </CopyButton>
+            <CopyButton onClick={() => setCurrentStep(0)}>완료</CopyButton>
+            <CopyButton onClick={() => setCurrentStep(0)}>취소</CopyButton>
           </MenuButtonGroup>
         </StepContainer>
       )}

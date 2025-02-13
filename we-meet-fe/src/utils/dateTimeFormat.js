@@ -2,6 +2,26 @@ export const formatTime = (time) => {
   return time + ":00";
 };
 
+export const validateSelectedDate = (date) =>{
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const selectedDate = new Date(date);
+  selectedDate.setHours(0,0,0,0);
+
+  return selectedDate < today;
+}
+// export const validateSelectedDate = (dates) =>{
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
+
+//   const hasPastDate = dates.some((date) => {
+//     const selectedDate = new Date(date);
+//     selectedDate.setHours(0, 0, 0, 0);
+//     return selectedDate < today;
+//   });
+// }
+
 export const parseISOString = (isoString) => {
   const [datePart, timePart] = isoString.split("T");
   const time = timePart.split("+")[0].substring(0, 5); // HH:mm 형식으로 추출

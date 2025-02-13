@@ -1,54 +1,33 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../../context/AuthContext";
 import { createMeeting } from "../../../../api/schedule/ScheduleAPI";
-import { generateUUID } from "../../../../utils/util";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import styled from "styled-components";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
 
 const CreateSchedule_Mobile = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   const [meetingData, setMeetingData] = useState({
-    creator_id: null,
-    anonymous_creator_id: null,
     title: "",
     description: "",
     dates: [],
+    expected_time: 60,
     time_range_from: "09:00:00",
     time_range_to: "18:00:00",
     is_online: false,
-    max_participants: 4,
     online_meeting_url: "",
   });
 
-  // 로그인, 비로그인 사용자 구분
-  useEffect(() => {
-    setMeetingData((prevData) => ({
-      ...prevData,
-      creator_id: user ? user.id : null,
-      anonymous_creator_id: user ? null : generateUUID(),
-    }));
-  }, [user]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const { isValid, errors } = validateMeetingData();
-    if (!isValid) {
-      alert("필수 항목 모두 채워주세요");
-      return;
-    }
 
     try {
       const result = await createMeeting(meetingData);
       if (result.success) {
         const meetingId = result.data[0].meeting_id;
-        console.log("미팅 생성 성공:", result.data);
         alert("미팅 생성 성공");
 
         navigate(`/meeting/${meetingId}`, {
@@ -58,34 +37,8 @@ const CreateSchedule_Mobile = () => {
         });
       }
     } catch (error) {
-      console.error("미팅 생성 실패:", error);
       alert("미팅 생성 실패");
     }
-  };
-
-  const validateMeetingData = () => {
-    const errors = {};
-
-    if (!meetingData.title.trim()) {
-      errors.title = "회의 제목을 입력해주세요";
-    }
-
-    if (meetingData.dates.length === 0) {
-      errors.dates = "회의 날짜를 선택해주세요";
-    }
-
-    if (meetingData.availableFrom >= meetingData.availableTo) {
-      errors.time = "종료 시간은 시작 시간보다 늦어야 합니다";
-    }
-
-    if (meetingData.attendeeCount < 2) {
-      errors.attendeeCount = "참여 인원은 2명 이상이어야 합니다";
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors,
-    };
   };
 
   const validateStep1 = () => {
@@ -95,33 +48,22 @@ const CreateSchedule_Mobile = () => {
     }
 
     if (meetingData.dates.length === 0) {
-      alert("회의 날짜를 선택해주세요");
+      alert("회의 날짜를 최소 1개 선택해주세요");
       return;
     }
-
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const hasPastDate = meetingData.dates.some((date) => {
-    const selectedDate = new Date(date);
-    selectedDate.setHours(0, 0, 0, 0);
-    return selectedDate < today;
-  });
-
-  if (hasPastDate) {
-    alert("오늘 이전 날짜는 선택할 수 없습니다.");
-    return;
-  }
 
     setStep(2);
   };
 
   return (
-    <FormContainer onSubmit={handleSubmit}>
+    <FormContainer>
       <Steps>
-        <Step $active={step === 1}>기본 정보</Step>
-        <Step $active={step === 2}>상세 정보</Step>
+        <Step $active={step === 1} step={step}>
+          기본 정보
+        </Step>
+        <Step $active={step === 2} step={step}>
+          상세 정보
+        </Step>
       </Steps>
       {step === 1 ? (
         <>
@@ -131,7 +73,7 @@ const CreateSchedule_Mobile = () => {
             setStep={setStep}
           />
           <Step1ButtonGroup>
-            <StepButton type="button" onClick={() => validateStep1()} $primary>
+            <StepButton onClick={() => validateStep1()}>
               다음
               <ArrowRight size={20} />
             </StepButton>
@@ -146,11 +88,11 @@ const CreateSchedule_Mobile = () => {
             handleSubmit={handleSubmit}
           />
           <Step2ButtonGroup>
-            <StepButton type="button" onClick={() => setStep(1)} $primary>
+            <StepButton onClick={() => setStep(1)}>
               이전
               <ArrowLeft size={20} />
             </StepButton>
-            <StepButton onClick={(e) => handleSubmit(e)} $primary>
+            <StepButton onClick={(e) => handleSubmit(e)}>
               회의 생성
               <ArrowRight size={20} />
             </StepButton>
@@ -161,25 +103,8 @@ const CreateSchedule_Mobile = () => {
   );
 };
 
-const FormContainer = styled.form`
+const FormContainer = styled.div`
   padding: 0 0.5rem 0.5rem 0.5rem;
-`;
-
-const Button = styled.button`
-  width: 100%;
-  background: ${({ theme }) => theme.colors.primary.main2};
-  color: white;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  margin-top: 1rem;
-
-  &:hover {
-    background: #e68600;
-  }
 `;
 
 const Steps = styled.div`
@@ -190,15 +115,17 @@ const Steps = styled.div`
 const Step = styled.div`
   flex: 1;
   text-align: center;
-  color: ${(props) => (props.$active ? "#ff9500" : "#9CA3AF")};
-  font-weight: ${(props) => (props.$active ? "600" : "400")};
+  color: ${(props) =>
+    props.$active || props.step >= 2 ? "#ff9500" : "#9CA3AF"};
+  font-weight: ${(props) => (props.$active || props.step >= 2 ? "600" : "400")};
 
   &::after {
     content: "";
     display: block;
     width: 100%;
     height: 2px;
-    background: ${(props) => (props.$active ? "#ff9500" : "#E5E7EB")};
+    background: ${(props) =>
+      props.$active || props.step >= 2 ? "#ff9500" : "#E5E7EB"};
     margin-top: 0.5rem;
   }
 `;
@@ -221,26 +148,7 @@ const StepButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.2s;
-
-  ${(props) =>
-    props.$primary
-      ? `
-    background-color: #ff4548;
-    color: white;
-    &:hover { background-color: #ff4548; }
-  `
-      : props.$secondary
-      ? `
-    background-color: white;
-    color: #ff4548;
-    border: 2px solid #ff4548;
-    &:hover { background-color: #fff1f1; }
-  `
-      : `
-    color: #6B7280;
-    &:hover { color: #374151; }
-  `}
+  background-color: #ff4548;
 `;
 
 export default CreateSchedule_Mobile;

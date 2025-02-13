@@ -1,12 +1,19 @@
 import React, { useState, useCallback } from "react";
 import styled from "styled-components";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { validateSelectedDate } from "../../../../utils/dateTimeFormat";
 
 const Calendar_Mobile = ({ meetingData, setMeetingData }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const handleDateClick = (date) => {
     
+    const hasPastdate = validateSelectedDate(date);
+    if(hasPastdate){
+      alert("오늘 이전의 날짜는 선택 할 수 없습니다");
+      return;
+    }
+
     const dateString = date.toISOString();
     const newDates = Array.isArray(meetingData.dates)
       ? [...meetingData.dates]

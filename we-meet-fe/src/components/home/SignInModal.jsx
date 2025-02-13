@@ -3,11 +3,21 @@ import { GoogleLogin } from "../../api/auth/AuthAPI";
 import styled from "styled-components";
 
 const SignInModal = ({ isOpen, onClose }) => {
+
+  const handleGoogleLogin = async () => {
+    try {
+      const redirectTo = "/meeting/create";
+      await GoogleLogin(redirectTo);
+    } catch (error) {
+      console.error("Google Login Failure:", error);
+    }
+  };
+
   if (!isOpen) return null;
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent>
-        <div onClick={() => GoogleLogin()}>구글 로그인으로 계속하기</div>
+        <div onClick={() => handleGoogleLogin()}>구글 로그인으로 계속하기</div>
         <Link to="/meeting/create">
           <div>로그인 없이 하기</div>
         </Link>
